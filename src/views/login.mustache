@@ -1,0 +1,17 @@
+<form autocomplete="off" action="/interaction/{{uid}}/login" method="post">
+    <input
+            required
+            type="text"
+            name="login"
+            placeholder="Enter any login"
+            {{^params.login_hint}}autofocus="on"{{/params.login_hint}}
+        {{#params.login_hint}}value="{{params.login_hint}}"{{/params.login_hint}}>
+    <input
+            required
+            type="password"
+            name="password"
+            placeholder="and password"
+            {{#params.login_hint}}autofocus="on"{{/params.login_hint}}>
+
+    <button type="submit" class="login login-submit">Sign-in</button>
+</form>

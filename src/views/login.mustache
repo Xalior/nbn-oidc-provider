@@ -1,3 +1,7 @@
+{{ if errors }}
+<div class="alert alert-danger">{{ errors }}</div>
+{{ endif }}
+
 <form autocomplete="off" action="/interaction/{{uid}}/login" method="post">
     <input
             required

@@ -3,6 +3,9 @@ import * as path from 'node:path';
 import * as url from 'node:url';
 import cors from 'cors';
 import express from 'express';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
+import flash from 'connect-flash';
 import helmet from 'helmet';
 import { dirname } from 'desm';
 import mustacheExpress from 'mustache-express';
@@ -22,6 +25,15 @@ config.findAccount = Account.findAccount;
 // Initialize Express app
 const app = express();
 
+app.use(cookieParser('nbn-id-dev'));
+
+app.use(session({
+    secret: 'nbn-id-dev',
+    resave: true,
+    saveUninitialized: true
+}));
+app.use(flash());
+
 // FUCK CORS
 app.use(cors());
 
@@ -34,7 +46,6 @@ app.use(helmet({
         directives,
     },
 }));
-
 
 // Register `.mustache` as the template engine
 app.engine('mustache', mustacheExpress());

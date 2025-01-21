@@ -8,10 +8,12 @@ import { urlencoded } from 'express';
 
 import Account from '../support/account.js';
 import { errors } from 'oidc-provider';
+import session from "express-session";
 
 const body = urlencoded({ extended: false });
 
 const keys = new Set();
+
 const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
     keys.add(key);
     if (isEmpty(value)) return acc;
@@ -22,9 +24,16 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
 });
 
 const { SessionNotFound } = errors;
+
+const setNoCache = (req, res, next) => {
+    res.set('cache-control', 'no-store');
+    next();
+}
+
 export default (app, provider) => {
     app.use((req, res, next) => {
         const orig = res.render;
+
         // you'll probably want to use a full blown render engine capable of layouts
         res.render = (view, locals) => {
             app.render(view, locals, (err, html) => {
@@ -38,12 +47,13 @@ export default (app, provider) => {
         next();
     });
 
-    function setNoCache(req, res, next) {
-        res.set('cache-control', 'no-store');
-        next();
-    }
-
     app.get('/interaction/:uid', setNoCache, async (req, res, next) => {
+        if (req.session.views) {
+            req.session.views++
+        } else {
+            req.session.views = 1
+        }
+
         try {
             const {
                 uid, prompt, params, session,
@@ -78,6 +88,8 @@ export default (app, provider) => {
             const hasPreviouslyGrantedOfflineAccess =
                 !prompt.details.missingOIDCScope || !prompt.details.missingOIDCScope.includes('offline_access');
 
+            console.log("Session: ", req.session);
+
             switch (prompt.name) {
                 case 'login': {
                     return res.render('login', {
@@ -90,29 +102,36 @@ export default (app, provider) => {
                         dbg: {
                             params: debug(params),
                             prompt: debug(prompt),
+                            res: debug(res),
                         },
+                        errors: req.flash('error'),
                     });
                 }
+
+                // We are a "closed circuit" network, with locked down clients and providers - so consent is implied
                 case 'consent': {
-                    return res.render('interaction', {
-                        client,
-                        uid,
-                        details: prompt.details,
-                        filteredMissingOIDCScope: filteredMissingOIDCScope,
-                        filteredMissingOIDCClaims: filteredMissingOIDCClaims,
-                        eachMissingResourceScope: eachMissingResourceScope,
-                        processedRar: processedRar,
-                        isOfflineAccessRequested: isOfflineAccessRequested,
-                        hasPreviouslyGrantedOfflineAccess: hasPreviouslyGrantedOfflineAccess,
-                        params,
-                        title: 'Authorize',
-                        session: session ? debug(session) : undefined,
-                        dbg: {
-                            params: debug(params),
-                            prompt: debug(prompt),
-                        },
-                    });
+                //     return res.render('interaction', {
+                //         client,
+                //         uid,
+                //         details: prompt.details,
+                //         filteredMissingOIDCScope: filteredMissingOIDCScope,
+                //         filteredMissingOIDCClaims: filteredMissingOIDCClaims,
+                //         eachMissingResourceScope: eachMissingResourceScope,
+                //         processedRar: processedRar,
+                //         isOfflineAccessRequested: isOfflineAccessRequested,
+                //         hasPreviouslyGrantedOfflineAccess: hasPreviouslyGrantedOfflineAccess,
+                //         params,
+                //         title: 'Authorize',
+                //         session: session ? debug(session) : undefined,
+                //         dbg: {
+                //             params: debug(params),
+                //             prompt: debug(prompt),
+                //             res: debug(res),
+                //         },
+                //     });
+                    throw(new Error("Unexpected consent request"));
                 }
+
                 default:
                     return undefined;
             }
@@ -123,11 +142,17 @@ export default (app, provider) => {
 
     app.post('/interaction/:uid/login', setNoCache, body, async (req, res, next) => {
         try {
-            const { prompt: { name } } = await provider.interactionDetails(req, res);
-            assert.equal(name, 'login');
-            console.log("Login: ", req.body);
+            const details = await provider.interactionDetails(req, res);
+
+            assert.equal(details.prompt['name'], 'login');
 
             const account = await Account.findByLogin(req.body.login);
+
+            if(!account) {
+                req.flash('error', 'Login failed - try again...');
+
+                return res.redirect(`/interaction/${details.jti}`);
+            }
 
             const result = {
                 login: {

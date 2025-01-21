@@ -71,7 +71,7 @@ class Account {
         // token is a reference to the token used for which a given account is being loaded,
         //   it is undefined in scenarios where account claims are returned from authorization endpoint
         // ctx is the http request context
-        // console.log("findAccount(",ctx, id, token,")");
+        console.log("findAccount(",ctx, id, token,")");
     
 
         const user = await db.select()

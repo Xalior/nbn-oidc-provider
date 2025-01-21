@@ -88,7 +88,7 @@ export default (app, provider) => {
             const hasPreviouslyGrantedOfflineAccess =
                 !prompt.details.missingOIDCScope || !prompt.details.missingOIDCScope.includes('offline_access');
 
-            console.log("Session: ", req.session);
+            console.log("Login Form Session: ", req.session);
 
             switch (prompt.name) {
                 case 'login': {
@@ -154,6 +154,42 @@ export default (app, provider) => {
                 return res.redirect(`/interaction/${details.jti}`);
             }
 
+            console.log("Login Attempt Session: ", req.session);
+
+            req.session.mfa_account_id = account.accountId;
+            req.session.mfa_pin = "123456";
+
+            return res.redirect(`/interaction/${details.jti}/mfa`);
+            // const result = {
+            //     login: {
+            //         accountId: account.accountId,
+            //     },
+            // };
+            //
+            // await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
+        } catch (err) {
+            next(err);
+        }
+    });
+
+    app.get('/interaction/:uid/mfa', setNoCache, body, async (req, res, next) => {
+        try {
+            const details = await provider.interactionDetails(req, res);
+
+            console.log("MFA Session: ", req.session);
+            console.log("MFA Details: ", details);
+
+            const account = await Account.findAccount(null, req.session.mfa_account_id);
+
+            if(!account) {
+                req.flash('error', 'Login failed - try again...');
+
+                return res.redirect(`/interaction/${details.jti}`);
+            }
+
+            delete(req.session.mfa_account_id);
+            delete(req.session.mfa_pin);
+
             const result = {
                 login: {
                     accountId: account.accountId,
@@ -166,52 +202,52 @@ export default (app, provider) => {
         }
     });
 
-    app.post('/interaction/:uid/confirm', setNoCache, body, async (req, res, next) => {
-        try {
-            const interactionDetails = await provider.interactionDetails(req, res);
-            const { prompt: { name, details }, params, session: { accountId } } = interactionDetails;
-            assert.equal(name, 'consent');
-
-            let { grantId } = interactionDetails;
-            let grant;
-
-            if (grantId) {
-                // we'll be modifying existing grant in existing session
-                grant = await provider.Grant.find(grantId);
-            } else {
-                // we're establishing a new grant
-                grant = new provider.Grant({
-                    accountId,
-                    clientId: params.client_id,
-                });
-            }
-
-            if (details.missingOIDCScope) {
-                grant.addOIDCScope(details.missingOIDCScope.join(' '));
-            }
-            if (details.missingOIDCClaims) {
-                grant.addOIDCClaims(details.missingOIDCClaims);
-            }
-            if (details.missingResourceScopes) {
-                for (const [indicator, scopes] of Object.entries(details.missingResourceScopes)) {
-                    grant.addResourceScope(indicator, scopes.join(' '));
-                }
-            }
-
-            grantId = await grant.save();
-
-            const consent = {};
-            if (!interactionDetails.grantId) {
-                // we don't have to pass grantId to consent, we're just modifying existing one
-                consent.grantId = grantId;
-            }
-
-            const result = { consent };
-            await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: true });
-        } catch (err) {
-            next(err);
-        }
-    });
+    // app.post('/interaction/:uid/confirm', setNoCache, body, async (req, res, next) => {
+    //     try {
+    //         const interactionDetails = await provider.interactionDetails(req, res);
+    //         const { prompt: { name, details }, params, session: { accountId } } = interactionDetails;
+    //         assert.equal(name, 'consent');
+    //
+    //         let { grantId } = interactionDetails;
+    //         let grant;
+    //
+    //         if (grantId) {
+    //             // we'll be modifying existing grant in existing session
+    //             grant = await provider.Grant.find(grantId);
+    //         } else {
+    //             // we're establishing a new grant
+    //             grant = new provider.Grant({
+    //                 accountId,
+    //                 clientId: params.client_id,
+    //             });
+    //         }
+    //
+    //         if (details.missingOIDCScope) {
+    //             grant.addOIDCScope(details.missingOIDCScope.join(' '));
+    //         }
+    //         if (details.missingOIDCClaims) {
+    //             grant.addOIDCClaims(details.missingOIDCClaims);
+    //         }
+    //         if (details.missingResourceScopes) {
+    //             for (const [indicator, scopes] of Object.entries(details.missingResourceScopes)) {
+    //                 grant.addResourceScope(indicator, scopes.join(' '));
+    //             }
+    //         }
+    //
+    //         grantId = await grant.save();
+    //
+    //         const consent = {};
+    //         if (!interactionDetails.grantId) {
+    //             // we don't have to pass grantId to consent, we're just modifying existing one
+    //             consent.grantId = grantId;
+    //         }
+    //
+    //         const result = { consent };
+    //         await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: true });
+    //     } catch (err) {
+    //         next(err);
+    //     }
+    // });
 
     app.get('/interaction/:uid/abort', setNoCache, async (req, res, next) => {
         try {

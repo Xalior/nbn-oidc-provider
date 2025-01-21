@@ -59,10 +59,12 @@ let server;
 try {
     // Initialize database adapter if MongoDB URI is provided
     let adapter;
-    if (process.env.MONGODB_URI) {
-        ({ default: adapter } = await import('./adapters/mongodb.js'));
-        await adapter.connect();
-    }
+    ({ default: adapter } = await import('./nbn_adapter.js'));
+
+    // if (process.env.MONGODB_URI) {
+    //     ({ default: adapter } = await import('./adapters/mongodb.js'));
+    //     await adapter.connect();
+    // }
 
     // Set up the OIDC Provider
     const provider = new Provider("https://dev.id.nextbestnetwork.com/", { adapter, ...config });

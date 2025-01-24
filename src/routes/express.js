@@ -8,7 +8,6 @@ import { urlencoded } from 'express';
 
 import Account from '../support/account.js';
 import { errors } from 'oidc-provider';
-import session from "express-session";
 
 const body = urlencoded({ extended: false });
 
@@ -48,12 +47,6 @@ export default (app, provider) => {
     });
 
     app.get('/interaction/:uid', setNoCache, async (req, res, next) => {
-        if (req.session.views) {
-            req.session.views++
-        } else {
-            req.session.views = 1
-        }
-
         try {
             const {
                 uid, prompt, params, session,
@@ -187,6 +180,7 @@ export default (app, provider) => {
                 return res.redirect(`/interaction/${details.jti}`);
             }
 
+            console.log("MFA Account: ", account);
             delete(req.session.mfa_account_id);
             delete(req.session.mfa_pin);
 

@@ -9,7 +9,6 @@ import flash from 'connect-flash';
 import helmet from 'helmet';
 import { dirname } from 'desm';
 import mustacheExpress from 'mustache-express';
-
 import Provider from 'oidc-provider';
 import Account from './support/account.js';
 import config from '../config.js';
@@ -36,6 +35,9 @@ app.use(flash());
 
 // FUCK CORS
 app.use(cors());
+console.log(path.join(__dirname, '../public'));
+
+app.use('/static', express.static(path.join(__dirname, '../public')));
 
 // Set up Helmet for security - Remove "form-action" directive
 const directives = helmet.contentSecurityPolicy.getDefaultDirectives();
@@ -53,6 +55,7 @@ app.engine('mustache', mustacheExpress());
 // Configure app views and template engine
 app.set('view engine', 'mustache');
 app.set('views', path.join(__dirname, 'views'));
+
 
 let server;
 

@@ -216,18 +216,18 @@ class NbnAdapter {
      *
      */
     async find(id) {
-        console.info('adapter find', id);
+        console.info('adapter find', id, 'on', this.model);
 
-        if(id==='CLIENT_ID') {
+        if(this.model==='Client' && id==='CLIENT_ID' && !storage.get(this.key(id))) {
             return {
                 client_id: 'CLIENT_ID',
                 client_secret: 'CLIENT_SECRET',
+                grant_requirements: ['ADMIN'],
                 grant_types: ['refresh_token', 'authorization_code'],
                 redirect_uris: ['https://psteniusubi.github.io/oidc-tester/authorization-code-flow.html'],
             }
         }
         return storage.get(this.key(id));
-
     }
 
     /**

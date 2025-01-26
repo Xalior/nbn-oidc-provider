@@ -46,6 +46,24 @@ export default (app, provider) => {
         next();
     });
 
+    app.get('/register', setNoCache, body, async (req, res, next) => {
+        try {
+            return res.render('register', {
+                // session: session ? debug(session) : undefined,
+                // dbg: {
+                //     params: debug(params),
+                //     prompt: debug(prompt),
+                //     res: debug(res),
+                // },
+                errors: req.flash('error'),
+            });
+        } catch (err) {
+            next(err);
+        }
+    });
+
+
+
     app.get('/interaction/:uid', setNoCache, async (req, res, next) => {
         try {
             const {

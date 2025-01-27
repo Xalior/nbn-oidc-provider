@@ -18,7 +18,6 @@ class Account {
      *   or not return them in id tokens but only userinfo and so on.
      */
     async claims(use, scope) { // eslint-disable-line no-unused-vars
-        console.log("claims:", use, scope, this);
         // if (this.profile) {
         //     return {
         //         sub: this.accountId, // it is essential to always return a sub claim
@@ -35,7 +34,8 @@ class Account {
             .from(users)
             .where(eq(users.id, this.accountId))
             .get();
-
+        //
+        // console.log("claims:", use, scope, this, "user:", user);
         return {
             sub: this.accountId,
             email: user.email,
@@ -71,8 +71,6 @@ class Account {
         // token is a reference to the token used for which a given account is being loaded,
         //   it is undefined in scenarios where account claims are returned from authorization endpoint
         // ctx is the http request context
-        console.log("findAccount(",ctx, id, token,")");
-    
 
         const user = await db.select()
             .from(users)

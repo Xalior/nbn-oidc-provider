@@ -16,6 +16,7 @@
         "@libsql/core": "^0.14.0",
         "@popperjs/core": "^2.11.8",
         "bootstrap": "^5.3.3",
+        "connect-ensure-login": "^0.1.1",
         "connect-flash": "^0.1.1",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
@@ -27,11 +28,15 @@
         "helmet": "^8.0.0",
         "ioredis": "^5.4.2",
         "lodash": "^4.17.21",
+        "morgan": "^1.10.0",
         "mustache": "^4.2.0",
         "mustache-express": "^1.3.2",
         "nanoid": "^5.0.9",
         "nodemon": "^3.1.9",
-        "oidc-provider": "^8.6.0"
+        "oidc-provider": "^8.6.0",
+        "openid-client": "^6.1.7",
+        "passport": "^0.7.0",
+        "rotating-file-stream": "^3.2.5"
     },
     "type": "module",
     "devDependencies": {

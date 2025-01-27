@@ -140,7 +140,7 @@ export default (app, provider) => {
                 //             res: debug(res),
                 //         },
                 //     });
-                    throw(new Error("Unexpected consent request"));
+                    throw(new Error(`Unexpected consent request (filteredMissingOIDCScope:${filteredMissingOIDCScope} eachMissingResourceScope:${eachMissingResourceScope} filteredMissingOIDCClaims:${filteredMissingOIDCClaims})`));
                 }
 
                 default:
@@ -166,18 +166,12 @@ export default (app, provider) => {
             }
 
             console.log("Login Attempt Session: ", req.session);
-
+/*
             req.session.mfa_account_id = account.accountId;
             req.session.mfa_pin = "123456";
 
             return res.redirect(`/interaction/${details.jti}/mfa`);
-            // const result = {
-            //     login: {
-            //         accountId: account.accountId,
-            //     },
-            // };
-            //
-            // await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
+
         } catch (err) {
             next(err);
         }
@@ -199,9 +193,11 @@ export default (app, provider) => {
             }
 
             console.log("MFA Account: ", account);
+
+
             delete(req.session.mfa_account_id);
             delete(req.session.mfa_pin);
-
+*/
             const result = {
                 login: {
                     accountId: account.accountId,

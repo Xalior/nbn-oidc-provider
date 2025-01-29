@@ -12,7 +12,8 @@ import mustacheExpress from 'mustache-express';
 import Provider from 'oidc-provider';
 import Account from './support/account.js';
 import config from '../config.js';
-import routes from './routes/express.js';
+import provider_routes from './provider/express.js';
+import client_routes from './client/routes.js';
 import morgan from 'morgan';
 
 import * as openidClient from 'openid-client'
@@ -20,6 +21,7 @@ import passport from 'passport';
 import { Strategy } from 'openid-client/passport'
 import * as RotatingFileStream from "rotating-file-stream";
 import { ensureLoggedIn, ensureLoggedOut } from 'connect-ensure-login'
+import {db} from "./db/index.js";
 
 const __dirname = dirname(import.meta.url);
 
@@ -30,12 +32,6 @@ config.findAccount = Account.findAccount;
 
 // Initialize Express app
 const app = express();
-
-// create a rotating write stream
-const accessLogStream = RotatingFileStream.createStream('access.log', {
-    interval: '1d', // rotate daily
-    path: path.join(__dirname, 'log')
-})
 
 // setup the logger
 app.use(morgan('combined'));//, { stream: accessLogStream }))
@@ -74,6 +70,26 @@ app.engine('mustache', mustacheExpress());
 app.set('view engine', 'mustache');
 app.set('views', path.join(__dirname, 'views'));
 
+app.use((req, res, next) => {
+    const orig = res.render;
+
+    // you'll probably want to use a full blown render engine capable of layouts, but this does for now...
+    res.render = (view, locals) => {
+        app.render(view, locals, (err, html) => {
+            if (err) throw err;
+            orig.call(res, '_layout', {
+                ...locals,
+                user: req.user,
+                body: html,
+            });
+        });
+    };
+    next();
+});
+
+
+
+
 const provider_url_string = "https://dev.id.nextbestnetwork.com/";
 const client_id = "SELF";
 const client_secret = "SELF_SECRET";
@@ -82,42 +98,8 @@ let server, issuer;
 
 const provider_url = new URL(provider_url_string);
 
-app.get('/', ensureLoggedIn('/login'),
-    async (req, res) => {
-        let me;
 
-        console.log("Current Tokens:", claims[req.user.sub]);
-        try {
-            me = await openidClient.fetchUserInfo(issuer, claims[req.user.sub].access_token, req.user.sub);
-        } catch (WWWAuthenticateChallengeError) {
-            console.log("Attempting to refresh token:");
-            const tokens = await openidClient.refreshTokenGrant(issuer, claims[req.user.sub].refresh_token, {
-                scope: 'openid email'
-            });
-
-            if(!tokens) res.redirect('/login');
-
-            console.log("New Tokens:", tokens);
-
-            me = await openidClient.fetchUserInfo(issuer, tokens.access_token, req.user.sub);
-
-            claims[req.user.sub] = {
-                access_token: tokens.access_token,
-                id_token: tokens.id_token,
-                token_type: tokens.token_type,
-                scope: tokens.scope,
-                expires_in: tokens.expires_in,
-                refresh_token: tokens.refresh_token,
-                me: me
-            };
-
-            console.log("New me:", me);
-        }
-
-        console.log("Me: ", me);
-        res.send(`Welcome ${req.user?.email || req.user?.sub} - ${me.email}`);
-    }
-);
+client_routes(app, db);
 
 app.get('/login',
     passport.authenticate(provider_url.host, {
@@ -192,8 +174,8 @@ try {
         });
     }
 
-    // Configure routes and middleware
-    routes(app, provider);
+    // Configure provider routes and middleware
+    provider_routes(app, provider);
     app.use(provider.callback());
 
     // Start the server
@@ -210,19 +192,14 @@ try {
         client_secret,
     );
 
-    console.log('Discovered issuer %s %O', issuer.issuer, issuer.metadata, issuer);
+    console.log('Discovered issuer:', issuer.serverMetadata());
 
     passport.use(new Strategy({
         'config': issuer,
         'scope': 'openid email userinfo offline_access',
         'callbackURL': `${provider_url}callback`
     }, async (tokens, verified) => {
-            console.log("Verifying tokens: ", tokens);
             const this_claim = tokens.claims();
-
-            const me = await openidClient.fetchUserInfo(issuer, tokens.access_token, this_claim.sub);
-
-            console.log(me);
 
             claims[this_claim.sub] = {
                 access_token: tokens.access_token,
@@ -231,7 +208,7 @@ try {
                 scope: tokens.scope,
                 expires_in: tokens.expires_in,
                 refresh_token: tokens.refresh_token,
-                me: me
+                me: await openidClient.fetchUserInfo(issuer, tokens.access_token, this_claim.sub)
             };
 
             verified(null, this_claim);

@@ -217,11 +217,11 @@ class NbnAdapter {
      */
     async find(id) {
         const item = storage.get(this.key(id));
-        if(item) {
-            console.log('adapter find', id, 'on', this.model, 'found', item);
-        } else {
-            console.info('adapter find', id, 'on', this.model, ' found NOTHING');
-        }
+        // if(item) {
+        //     console.log('adapter find', id, 'on', this.model, 'found', item);
+        // } else {
+        //     console.info('adapter find', id, 'on', this.model, ' found NOTHING');
+        // }
 
         if(this.model==='Client') {
             switch(id) {
@@ -259,7 +259,7 @@ class NbnAdapter {
      *
      */
     async findByUserCode(userCode) {
-        console.info('adapter findByUserCode', userCode, 'on', this.model);
+        // console.info('adapter findByUserCode', userCode, 'on', this.model);
         const id = storage.get(userCodeKeyFor(userCode));
         return this.find(id);
 
@@ -276,7 +276,7 @@ class NbnAdapter {
      *
      */
     async findByUid(uid) {
-        console.info('adapter findByUid', uid, 'on', this.model);
+        // console.info('adapter findByUid', uid, 'on', this.model);
         const id = storage.get(sessionUidKeyFor(uid));
         return this.find(id);
 
@@ -294,7 +294,7 @@ class NbnAdapter {
      *
      */
     async consume(id) {
-        console.info('adapter consume', id, 'on', this.model);
+        // console.info('adapter consume', id, 'on', this.model);
         storage.get(this.key(id)).consumed = epochTime();
     }
 
@@ -309,7 +309,7 @@ class NbnAdapter {
      *
      */
     async destroy(id) {
-        console.info('adapter destroy', id, 'on', this.model);
+        // console.info('adapter destroy', id, 'on', this.model);
         const key = this.key(id);
         storage.delete(key);
     }
@@ -325,7 +325,7 @@ class NbnAdapter {
      *
      */
     async revokeByGrantId(grantId) {
-        console.info('adapter revokeByGrantId', grantId, 'on', this.model);
+        // console.info('adapter revokeByGrantId', grantId, 'on', this.model);
         const grantKey = grantKeyFor(grantId);
         const grant = storage.get(grantKey);
         if (grant) {

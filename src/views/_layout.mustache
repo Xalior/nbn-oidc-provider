@@ -77,6 +77,45 @@
     </ul>
 </div>
 
+<nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <!-- Left-side navigation links -->
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="/about">About</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <!-- Right-side navigation links -->
+                {{^user}}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register">Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                {{/user}}
+                {{#user}}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                {{/user}}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
 {{#errors.length}}
     <div class="w-100 text-center">
     {{#errors}}
@@ -84,37 +123,9 @@
     {{/errors}}
     </div>
 {{/errors.length}}
+
 {{{ body }}}
-<!--<main class="w-100 m-auto">-->
-<!--<div class="grant-debug">-->
-<!--    <details>-->
-<!--        <summary style="text-align: center;">(Click to expand) DEBUG information</summary>-->
-<!--        <div>-->
-<!--            <strong>uid</strong>: {{ uid }}-->
-<!--        </div>-->
 
-<!--        {{# session }}-->
-<!--            <div>-->
-<!--                SESSION <br>-->
-<!--                ========= <br>-->
-<!--                {{{ session }}}-->
-<!--            </div>-->
-<!--        {{/ session }}-->
-
-<!--        <div>-->
-<!--            PARAMS <br>-->
-<!--            ======== <br>-->
-<!--            {{{ dbg.params }}}-->
-<!--        </div>-->
-
-<!--        <div>-->
-<!--            PROMPT <br>-->
-<!--            ======== <br>-->
-<!--            {{{ dbg.prompt }}}-->
-<!--        </div>-->
-<!--    </details>-->
-<!--</div>-->
-<!--</main>-->
 </div>
 <script src="/static/main.js"></script>
 </body>

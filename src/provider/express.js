@@ -6,7 +6,7 @@ import { inspect } from 'node:util';
 import isEmpty from 'lodash/isEmpty.js';
 import { urlencoded } from 'express';
 
-import Account from '../support/account.js';
+import { Account } from '../support/account.js';
 import { errors } from 'oidc-provider';
 
 const body = urlencoded({ extended: false });
@@ -30,22 +30,6 @@ const setNoCache = (req, res, next) => {
 }
 
 export default (app, provider) => {
-    app.get('/register', setNoCache, body, async (req, res, next) => {
-        try {
-            return res.render('register', {
-                // session: session ? debug(session) : undefined,
-                // dbg: {
-                //     params: debug(params),
-                //     prompt: debug(prompt),
-                //     res: debug(res),
-                // },
-                errors: req.flash('error'),
-            });
-        } catch (err) {
-            next(err);
-        }
-    });
-
     app.get('/interaction/:uid', setNoCache, async (req, res, next) => {
         try {
             const {
@@ -148,7 +132,7 @@ export default (app, provider) => {
             }
 
             console.log("Login Attempt Session: ", req.session);
-/*
+
             req.session.mfa_account_id = account.accountId;
             req.session.mfa_pin = "123456";
 
@@ -179,7 +163,7 @@ export default (app, provider) => {
 
             delete(req.session.mfa_account_id);
             delete(req.session.mfa_pin);
-*/
+
             const result = {
                 login: {
                     accountId: account.accountId,
@@ -187,6 +171,9 @@ export default (app, provider) => {
             };
 
             await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
+
+
+            console.log("MFA Complete: ", req.session);
         } catch (err) {
             next(err);
         }
@@ -253,6 +240,7 @@ export default (app, provider) => {
 
     app.use((err, req, res, next) => {
         if (err instanceof SessionNotFound) {
+            throw SessionNotFound;
             // handle interaction expired / session not found error
         }
         next(err);

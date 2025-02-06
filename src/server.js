@@ -10,7 +10,7 @@ import helmet from 'helmet';
 import { dirname } from 'desm';
 import mustacheExpress from 'mustache-express';
 import Provider from 'oidc-provider';
-import Account from './support/account.js';
+import { Account } from './support/account.js';
 import config from '../config.js';
 import provider_routes from './provider/express.js';
 import client_routes from './client/routes.js';
@@ -35,13 +35,16 @@ const app = express();
 
 // setup the logger
 app.use(morgan('combined'));//, { stream: accessLogStream }))
-
-app.use(cookieParser('nbn-id-dev'));
+//
+// app.use(cookieParser('nbn-id-dev'));
 
 app.use(session({
     secret: 'nbn-id-dev',
-    resave: true,
-    saveUninitialized: true
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        secure: true
+    }
 }));
 
 app.use(flash());
@@ -61,6 +64,7 @@ app.use(helmet({
         directives,
     },
 }));
+
 app.use(passport.authenticate('session'))
 
 // Register `.mustache` as the template engine
@@ -99,30 +103,32 @@ let server, issuer;
 const provider_url = new URL(provider_url_string);
 
 
-client_routes(app, db);
+client_routes(app);
 
 app.get('/login',
     passport.authenticate(provider_url.host, {
         failureRedirect: '/login',
-        failureFlash: true
+        failureFlash: true,
+        keepSessionInfo: true
     })
 );
 
-app.get('/callback', passport.authenticate(provider_url.host, {
+app.get('/callback',
+    passport.authenticate(provider_url.host, {
         failureRedirect: '/login',
-        failureFlash: true
+        failureFlash: true,
+        keepSessionInfo: true
     }),
 
     // Executed on successful login
     function(req, res) {
         console.log("Callback URL triggered");
-        console.log(req.user);
+        console.log(req.user, req.session);
         res.redirect('/');
     }
 );
 
 app.get('/logout', (req, res) => {
-
     req.logout(() => {
         res.redirect(
             openidClient.buildEndSessionUrl(issuer, {
@@ -201,6 +207,9 @@ try {
     }, async (tokens, verified) => {
             const this_claim = tokens.claims();
 
+            const me = await openidClient.fetchUserInfo(issuer, tokens.access_token, this_claim.sub);
+            console.log("openidClient.fetchUserInfo", me);
+
             claims[this_claim.sub] = {
                 access_token: tokens.access_token,
                 id_token: tokens.id_token,
@@ -208,7 +217,7 @@ try {
                 scope: tokens.scope,
                 expires_in: tokens.expires_in,
                 refresh_token: tokens.refresh_token,
-                me: await openidClient.fetchUserInfo(issuer, tokens.access_token, this_claim.sub)
+                me: me
             };
 
             verified(null, this_claim);

@@ -56,7 +56,7 @@ class NbnAdapter {
      *
      */
     async upsert(id, payload, expiresIn) {
-        console.info('adapter upsert', id, payload);
+        // console.info('adapter upsert', id, payload);
 
         /**
          *
@@ -232,6 +232,7 @@ class NbnAdapter {
                         grant_requirements: ['ADMIN'],
                         grant_types: ['refresh_token', 'authorization_code'],
                         redirect_uris: ['https://psteniusubi.github.io/oidc-tester/authorization-code-flow.html'],
+                        post_logout_redirect_uris: ['https://psteniusubi.github.io/oidc-tester/logout-redirect'],
                     }
                 case 'SELF':
                     return {
@@ -240,6 +241,7 @@ class NbnAdapter {
                         grant_requirements: ['ADMIN'],
                         grant_types: ['refresh_token', 'authorization_code'],
                         redirect_uris: ['https://dev.id.nextbestnetwork.com/callback'],
+                        post_logout_redirect_uris: ['https://dev.id.nextbestnetwork.com/'],
                     }
             }
         }

@@ -2,8 +2,9 @@ import {nanoid} from 'nanoid';
 import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import session from "express-session";
 
-class Account {
+export class Account {
     constructor(id, profile) {
         this.accountId = id || nanoid();
         this.profile = profile;
@@ -92,4 +93,17 @@ class Account {
     }
 }
 
-export default Account;
+export const ensureAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return next()
+    }
+    req.session.destination_path = req.route.path;
+    res.redirect('/login') // if not auth
+};
+
+export const forwardAuthenticated = (req, res, next) => {
+    if (!req.isAuthenticated()) {
+        return next()
+    }
+    res.redirect('/profile');  // if auth
+}

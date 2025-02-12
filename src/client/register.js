@@ -1,3 +1,10 @@
+import { check, validationResult, matchedData } from 'express-validator';
+import { users } from '../db/schema.js';
+import { db } from "../db/index.js";
+import { eq, sql } from "drizzle-orm";
+import { sendConfirmationEmail} from "../lib/email.js";
+import {nanoid} from "nanoid";
+
 export default (app) => {
     app.get('/register', async (req, res, next) => {
         try {
@@ -14,4 +21,105 @@ export default (app) => {
             next(err);
         }
     });
+
+    app.post('/register',
+        check('display_name').trim().notEmpty().isLength({
+            min: 5,
+            max: 64
+        }).withMessage("Display name should be between 5 and 64 characters.").escape(),
+
+        check('email').trim().notEmpty().isEmail().withMessage('Not a valid e-mail address').custom(
+    async (value,{req, loc, path}) => {
+            const existing_user = await db.select()
+                .from(users)
+                .where(eq(users.email, value))
+                .limit(1)
+                .get();
+            if (existing_user) {
+                if(!existing_user.verified) {
+                    throw new Error("User already exists - have <a href=\"reconfirm\">lost your confirmation link</a>?");
+                }
+
+                if(existing_user.suspended){
+                    throw new Error("The account associated with this email address has been suspended.");
+                }
+
+                throw new Error("User already exists - do you need to <a href=\"/reset\">reset your password</a>?");
+            } else {
+                return value;
+            }
+        }),
+
+        check('password_1').trim().notEmpty().isStrongPassword({
+            minLength: 16,
+            minLowercase: 2,
+            minUppercase: 2,
+            minNumbers: 2,
+            minSymbols: 0,
+        }).withMessage('Strong password required (Min. length 16 characters long and must containing at-least 2 uppercase, 2 lowercase and 2 numeric characters.'),
+
+        check('password_2').trim().custom((value,{req, loc, path}) => {
+            if (value !== req.body.password_1) {
+                // throw error if passwords do not match
+                throw new Error("Passwords don't match");
+            } else {
+                return value;
+            }
+        }).trim(),
+        check('agree_tos').notEmpty().withMessage('You must agree to our terms of service to join.'),
+
+        // Actual page response
+        async (req, res, next) => {
+            try {
+                if(req.body.confirm_spammer === 'on') {
+                    return res.redirect(`/confirm?email=${req.body.email}`);
+                }
+
+                const validation_errors = validationResult(req)?.errors;
+
+                if(validation_errors.length) {
+                    req.body.errors = [];
+
+                    validation_errors.forEach((error) => {
+                        req.body.errors[error.path] = error.msg;
+                    })
+
+
+                    return res.render('register', {
+                        reg_form: req.body,
+
+                        errors: req.flash('error'),
+                    });
+                }
+
+                const reg_form = matchedData(req, { includeOptionals: true });
+
+                console.log("We're creating a new user now, with: ", reg_form);
+
+                const new_user = await db.insert(users).values({
+                    email: reg_form.email,
+                    password: reg_form.password_1,
+                    display_name: reg_form.display_name,
+                    hmac_key: nanoid(26)
+                });
+
+                await sendConfirmationEmail(new_user);
+
+
+                console.log("New User:", new_user);
+                return res.render('register', {
+                    // session: session ? debug(session) : undefined,
+                    // dbg: {
+                    //     params: debug(params),
+                    //     prompt: debug(prompt),
+                    //     res: debug(res),
+                    // },
+                    reg_form: req.body,
+
+                    errors: req.flash('error'),
+                });
+            } catch (err) {
+                next(err);
+            }
+        });
 };

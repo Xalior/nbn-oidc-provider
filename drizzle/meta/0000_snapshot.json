@@ -1,21 +1,28 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b7cfdf34-4971-4497-8444-8db1916210cf",
+  "id": "c73c5fd3-3886-4dff-9d67-9faa058331a2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "signups": {
-      "name": "signups",
+    "confirmation_codes": {
+      "name": "confirmation_codes",
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
-        "email": {
-          "name": "email",
+        "invite_code": {
+          "name": "invite_code",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -27,19 +34,33 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
+          "default": "(unixepoch())"
         }
       },
       "indexes": {
-        "signups_email_unique": {
-          "name": "signups_email_unique",
+        "confirmation_codes_invite_code_unique": {
+          "name": "confirmation_codes_invite_code_unique",
           "columns": [
-            "email"
+            "invite_code"
           ],
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "confirmation_codes_user_id_users_id_fk": {
+          "name": "confirmation_codes_user_id_users_id_fk",
+          "tableFrom": "confirmation_codes",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -49,10 +70,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": true
         },
         "email": {
           "name": "email",
@@ -68,17 +89,46 @@
           "notNull": true,
           "autoincrement": false
         },
-        "email_verified": {
-          "name": "email_verified",
+        "verified": {
+          "name": "verified",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": false
         },
-        "name": {
-          "name": "name",
+        "suspended": {
+          "name": "suspended",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "hmac_key": {
+          "name": "hmac_key",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "confirmation_attempts": {
+          "name": "confirmation_attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "login_attempts": {
+          "name": "login_attempts",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -89,7 +139,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
+          "default": "(unixepoch())"
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {

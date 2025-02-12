@@ -5,32 +5,63 @@
                 <div class="card-body p-5">
                     <h2 class="text-uppercase text-center mb-5">Create an account</h2>
 
-                    <form method="POST" action="/register">
-
+                    <form method="POST" action="/register" class="form-register">
+                        {{#reg_form.errors.display_name}}
+                            <div class="invalid-feedback">
+                                {{{reg_form.errors.display_name}}}
+                            </div>
+                        {{/reg_form.errors.display_name}}
                         <div data-mdb-input-init="" class="form-outline mb-4">
-                            <input type="text" id="form3Example1cg" class="form-control form-control-lg">
-                            <div data-lastpass-icon-root="" style="position: relative !important; height: 0px !important; width: 0px !important; float: left !important;"></div><label class="form-label" for="form3Example1cg">Your Name</label>
+                            <input type="text" name="display_name" id="display_name" class="form-control form-control-lg" value="{{reg_form.display_name}}">
+                            <label class="form-label" for="display_name">Your Name</label>
                         </div>
 
+                        {{#reg_form.errors.email}}
+                            <div class="invalid-feedback">
+                                {{{reg_form.errors.email}}}
+                            </div>
+                        {{/reg_form.errors.email}}
                         <div data-mdb-input-init="" class="form-outline mb-4">
-                            <input type="email" id="form3Example3cg" class="form-control form-control-lg">
-                            <label class="form-label" for="form3Example3cg">Your Email</label>
+                            <input type="email" id="email" name="email" class="form-control form-control-lg" value="{{reg_form.email}}">
+                            <label class="form-label" for="email">Your Email</label>
                         </div>
 
+                        {{#reg_form.errors.password_1}}
+                            <div class="invalid-feedback">
+                                {{{reg_form.errors.password_1}}}
+                            </div>
+                        {{/reg_form.errors.password_1}}
                         <div data-mdb-input-init="" class="form-outline mb-4">
-                            <input type="password" id="form3Example4cg" class="form-control form-control-lg">
-                            <div data-lastpass-icon-root="" style="position: relative !important; height: 0px !important; width: 0px !important; float: left !important;"></div><label class="form-label" for="form3Example4cg">Password</label>
+                            <input type="password" id="password_1" name="password_1" class="form-control form-control-lg" value="{{reg_form.password_1}}">
+                            <label class="form-label" for="password_1">Password</label>
                         </div>
 
+                        {{#reg_form.errors.password_2}}
+                            <div class="invalid-feedback">
+                                {{{reg_form.errors.password_2}}}
+                            </div>
+                        {{/reg_form.errors.password_2}}
                         <div data-mdb-input-init="" class="form-outline mb-4">
-                            <input type="password" id="form3Example4cdg" class="form-control form-control-lg">
-                            <div data-lastpass-icon-root="" style="position: relative !important; height: 0px !important; width: 0px !important; float: left !important;"></div><label class="form-label" for="form3Example4cdg">Repeat your password</label>
+                            <input type="password" id="password_2" name="password_2" class="form-control form-control-lg" value="{{reg_form.password_2}}">
+                            <label class="form-label" for="password_2">Repeat your password</label>
+                        </div>
+
+                        {{#reg_form.errors.agree_tos}}
+                            <div class="invalid-feedback">
+                                {{{reg_form.errors.agree_tos}}}
+                            </div>
+                        {{/reg_form.errors.agree_tos}}
+                        <div class="form-check d-flex justify-content-center mb-5">
+                            <input class="form-check-input me-2" type="checkbox" id="agree_tos" name="agree_tos" {{#reg_form.agree_tos}}checked{{/reg_form.agree_tos}}>
+                            <label class="form-check-label" for="agree_tos">
+                                I agree all statements in <a href="#" data-bs-toggle="modal" data-bs-target="#popupModal">Terms of service</a>.
+                            </label>
                         </div>
 
                         <div class="form-check d-flex justify-content-center mb-5">
-                            <input class="form-check-input me-2" type="checkbox" value="" id="form2Example3cg">
-                            <label class="form-check-label" for="form2Example3cg">
-                                I agree all statements in <a href="#" data-bs-toggle="modal" data-bs-target="#popupModal">Terms of service</a>.
+                            <input class="form-check-input me-2" type="checkbox" id="confirm_spammer" name="confirm_spammer" {{#reg_form.confirm_spammer}}checked{{/reg_form.confirm_spammer}}>
+                            <label class="form-check-label" for="confirm_spammer">
+                                I confirm that I am a spammer.
                             </label>
                         </div>
 

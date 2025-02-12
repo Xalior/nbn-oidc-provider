@@ -1,13 +1,9 @@
 export default {
-    redis_url: 'redis://localhost:6379',
-    clients: [
-        // {
-        //   client_id: 'oidcCLIENT',
-        //   client_secret: '...',
-        //   grant_types: ['refresh_token', 'authorization_code'],
-        //   redirect_uris: ['http://sso-client.dev/providers/7/open_id', 'http://sso-client.dev/providers/8/open_id'],
-        // }
-    ],
+    provider_url: "https://localhost/",
+    mode: 'development',
+    database_url: 'file:sqlite.db',
+    force_https: true,
+
     interactions: {
         url(ctx, interaction) { // eslint-disable-line no-unused-vars
             return `/interaction/${interaction.uid}`;
@@ -25,9 +21,17 @@ export default {
     },
     features: {
         devInteractions: { enabled: false }, // defaults to true
-
         deviceFlow: { enabled: true }, // defaults to false
         revocation: { enabled: true }, // defaults to false
+    },
+    smtp: {
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false, // true for port 465, false for other ports
+        auth: {
+            user: "maddison53@ethereal.email",
+            pass: "jn7jnAPss4f63QBp6D",
+        },
     },
     jwks: {
         keys: [

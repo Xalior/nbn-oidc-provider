@@ -1,4 +1,5 @@
 import QuickLRU from 'quick-lru';
+import {config} from "../config";
 
 import epochTime from 'oidc-provider/lib/helpers/epoch_time.js';
 
@@ -240,8 +241,8 @@ class NbnAdapter {
                         client_secret: 'SELF_SECRET',
                         grant_requirements: ['ADMIN'],
                         grant_types: ['refresh_token', 'authorization_code'],
-                        redirect_uris: ['https://dev.id.nextbestnetwork.com/callback'],
-                        post_logout_redirect_uris: ['https://dev.id.nextbestnetwork.com/'],
+                        redirect_uris: [`${config.provider_url}callback`],
+                        post_logout_redirect_uris: [config.provider_url],
                     }
             }
         }

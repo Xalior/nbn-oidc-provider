@@ -1,38 +1,44 @@
-<section class="w-100">
-    <form class="form-signin  m-auto" autocomplete="off" action="/interaction/{{uid}}/login" method="post">
-        <h1>{{ title }}</h1>
+<div class="row d-flex justify-content-center align-items-center h-100 w-100">
+    <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+        <div class="card" style="border-radius: 15px;">
+            <div class="card-body p-5">
+                <form class="form-signin  m-auto" autocomplete="off" action="/interaction/{{uid}}/login" method="post">
+                    <h1>{{ title }}</h1>
 
 
-        <div class="form-floating">
-            <input  id="login_email"
-                    class="form-control"
-                    required
-                    type="email"
-                    name="login"
-                    placeholder="name@example.com"
-                    {{^params.login_hint}}autofocus="on"{{/params.login_hint}}
-                {{#params.login_hint}}value="{{params.login_hint}}"{{/params.login_hint}}>
-            <label for="login_email">Email address</label>
+                    <div class="form-floating">
+                        <input  id="login_email"
+                                class="form-control"
+                                required
+                                type="email"
+                                name="login"
+                                placeholder="name@example.com"
+                                {{^params.login_hint}}autofocus="on"{{/params.login_hint}}
+                            {{#params.login_hint}}value="{{params.login_hint}}"{{/params.login_hint}}>
+                        <label for="login_email">Email address</label>
+                    </div>
+                    <div class="form-floating">
+
+                        <input  id="login_password"
+                                class="form-control"
+                                required
+                                type="password"
+                                name="password"
+                                placeholder="password"
+                            {{#params.login_hint}}autofocus="on"{{/params.login_hint}}>
+                        <label for="login_password">Password</label>
+                    </div>
+
+                    <div class="form-check text-start my-3">
+                        <input class="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault">
+                        <label class="form-check-label" for="flexCheckDefault">
+                            Remember me
+                        </label>
+                    </div>
+                    <button class="btn btn-primary w-100 py-2 my-2" type="submit">Sign in</button>
+                    <a class="btn btn-secondary w-100 py-2 my-2" href="/interaction/{{ uid }}/abort">Cancel</a>
+                </form>
+            </div>
         </div>
-        <div class="form-floating">
-
-            <input  id="login_password"
-                    class="form-control"
-                    required
-                    type="password"
-                    name="password"
-                    placeholder="password"
-                {{#params.login_hint}}autofocus="on"{{/params.login_hint}}>
-            <label for="login_password">Password</label>
-        </div>
-
-        <div class="form-check text-start my-3">
-            <input class="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault">
-            <label class="form-check-label" for="flexCheckDefault">
-                Remember me
-            </label>
-        </div>
-        <button class="btn btn-primary w-100 py-2 my-2" type="submit">Sign in</button>
-        <a class="btn btn-secondary w-100 py-2 my-2" href="/interaction/{{ uid }}/abort">Cancel</a>
-    </form>
-</section>
+    </div>
+</div>

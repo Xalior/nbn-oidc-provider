@@ -4,6 +4,7 @@ import * as url from 'node:url';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
+import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import flash from 'connect-flash';
 import helmet from 'helmet';
@@ -20,8 +21,6 @@ import * as openidClient from 'openid-client'
 import passport from 'passport';
 import { Strategy } from 'openid-client/passport'
 import * as RotatingFileStream from "rotating-file-stream";
-import { ensureLoggedIn, ensureLoggedOut } from 'connect-ensure-login'
-import {db} from "./db/index.js";
 
 const __dirname = dirname(import.meta.url);
 
@@ -35,8 +34,9 @@ const app = express();
 
 // setup the logger
 app.use(morgan('combined'));//, { stream: accessLogStream }))
-//
-// app.use(cookieParser('nbn-id-dev'));
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.use(session({
     secret: 'nbn-id-dev',
@@ -91,16 +91,12 @@ app.use((req, res, next) => {
     next();
 });
 
-
-
-
-const provider_url_string = "https://dev.id.nextbestnetwork.com/";
 const client_id = "SELF";
 const client_secret = "SELF_SECRET";
 
 let server, issuer;
 
-const provider_url = new URL(provider_url_string);
+const provider_url = new URL(config.provider_url);
 
 
 client_routes(app);
@@ -155,7 +151,7 @@ try {
     ({ default: adapter } = await import('./nbn_adapter.js'));
 
     // Set up the OIDC Provider
-    const provider = new Provider("https://dev.id.nextbestnetwork.com/", { adapter, ...config });
+    const provider = new Provider(config.provider_url, { adapter, ...config });
 
     // If in production, enforce HTTPS by redirecting requests
     if (config.mode === 'production' || config.force_https === true) {
@@ -190,7 +186,7 @@ try {
         console.log(`Check /.well-known/openid-configuration for details.`);
     });
 
-    console.log("Being period of self discovery: ", provider_url_string);
+    console.log("Being period of self discovery: ", config.provider_url);
 
     issuer = await openidClient.discovery(
         provider_url,

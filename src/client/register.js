@@ -8,15 +8,7 @@ import {nanoid} from "nanoid";
 export default (app) => {
     app.get('/register', async (req, res, next) => {
         try {
-            return res.render('register', {
-                // session: session ? debug(session) : undefined,
-                // dbg: {
-                //     params: debug(params),
-                //     prompt: debug(prompt),
-                //     res: debug(res),
-                // },
-                errors: req.flash('error'),
-            });
+            return res.render('register');
         } catch (err) {
             next(err);
         }
@@ -35,6 +27,7 @@ export default (app) => {
                 .where(eq(users.email, value))
                 .limit(1)
                 .get();
+
             if (existing_user) {
                 if(!existing_user.verified) {
                     throw new Error("User already exists - have <a href=\"reconfirm\">lost your confirmation link</a>?");
@@ -88,9 +81,7 @@ export default (app) => {
 
 
                     return res.render('register', {
-                        reg_form: req.body,
-
-                        errors: req.flash('error'),
+                        reg_form: req.body
                     });
                 }
 

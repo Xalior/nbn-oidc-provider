@@ -12,14 +12,14 @@ export const users = sqliteTable('users', {
   display_name: text('display_name').notNull(),
   confirmation_attempts: integer('confirmation_attempts'),
   login_attempts: integer('login_attempts'),
-  created_at: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
   confirmation_sent: integer('confirmed_at', { mode: 'timestamp' }),
-  confirmed_at: integer('confirmed_at', { mode: 'timestamp' })
+  confirmed_at: text('confirmed_at'),
+  created_at: text('created_at').notNull().default(sql`(current_timestamp)`),
 });
 
 export const confirmation_codes = sqliteTable('confirmation_codes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  user_id: text('user_id').references(() => users.id),
+  user_id: integer('user_id').references(() => users.id),
   invite_code: text('invite_code').notNull().unique(),
-  created_at: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  created_at: text('created_at').notNull().default(sql`(current_timestamp)`),
 });

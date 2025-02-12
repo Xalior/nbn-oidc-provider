@@ -81,7 +81,6 @@ export default (app, provider) => {
                             prompt: debug(prompt),
                             res: debug(res),
                         },
-                        errors: req.flash('error'),
                     });
                 }
 

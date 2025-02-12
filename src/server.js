@@ -85,6 +85,11 @@ app.use((req, res, next) => {
                 ...locals,
                 user: req.user,
                 body: html,
+
+                errors: req.flash('error'),
+                infos: req.flash('info'),
+                warnings: req.flash('warning'),
+
             });
         });
     };

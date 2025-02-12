@@ -9,9 +9,6 @@ export default (app) => {
             res.redirect(destinationPath);
         }
 
-        return res.render('home', {
-            user: req.user,
-            errors: req.flash('error'),
-        });
+        return res.render('home');
     });
 };

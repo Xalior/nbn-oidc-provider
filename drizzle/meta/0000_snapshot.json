@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c73c5fd3-3886-4dff-9d67-9faa058331a2",
+  "id": "519b6fa1-a72e-4622-9a64-56361270a9fd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "confirmation_codes": {
@@ -16,7 +16,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -30,11 +30,11 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
-          "default": "(unixepoch())"
+          "default": "(current_timestamp)"
         }
       },
       "indexes": {
@@ -133,20 +133,20 @@
           "notNull": false,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "(unixepoch())"
-        },
         "confirmed_at": {
           "name": "confirmed_at",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(current_timestamp)"
         }
       },
       "indexes": {

@@ -116,6 +116,24 @@
 </nav>
 
 
+{{#infos.length}}
+    <div class="w-100 text-center">
+    {{#infos}}
+        <div class="alert alert-info">{{ . }}</div>
+    {{/infos}}
+    </div>
+{{/infos.length}}
+
+
+{{#warnings.length}}
+    <div class="w-100 text-center">
+    {{#warnings}}
+        <div class="alert alert-warning">{{ . }}</div>
+    {{/warnings}}
+    </div>
+{{/warnings.length}}
+
+
 {{#errors.length}}
     <div class="w-100 text-center">
     {{#errors}}

@@ -1,5 +1,5 @@
 import { check, validationResult, matchedData } from 'express-validator';
-import { users } from '../db/schema.js';
+import { users, confirmation_codes } from '../db/schema.js';
 import { db } from "../db/index.js";
 import { eq, sql } from "drizzle-orm";
 import { sendConfirmationEmail} from "../lib/email.js";
@@ -72,6 +72,8 @@ export default (app) => {
         async (req, res, next) => {
             try {
                 if(req.body.confirm_spammer === 'on') {
+                    // Redirect to confirmation static page -- the email= slug only logs the email address in the weblog
+                    // it's a red herring in a honeypot ;-)  -- but stored lazily so we can maybe report on it later...
                     return res.redirect(`/confirm?email=${req.body.email}`);
                 }
 
@@ -94,30 +96,22 @@ export default (app) => {
 
                 const reg_form = matchedData(req, { includeOptionals: true });
 
-                console.log("We're creating a new user now, with: ", reg_form);
-
-                const new_user = await db.insert(users).values({
+                const [new_user] = await db.insert(users).values({
                     email: reg_form.email,
                     password: reg_form.password_1,
                     display_name: reg_form.display_name,
-                    hmac_key: nanoid(26)
-                });
+                }).returning();
 
-                await sendConfirmationEmail(new_user);
+                const [confirmation_code] = await db.insert(confirmation_codes).values({
+                    user_id: new_user.id,
+                    invite_code: nanoid(52),
+                    display_name: reg_form.display_name,
+                }).returning();
 
+                await sendConfirmationEmail(new_user.email, confirmation_code.invite_code);
 
-                console.log("New User:", new_user);
-                return res.render('register', {
-                    // session: session ? debug(session) : undefined,
-                    // dbg: {
-                    //     params: debug(params),
-                    //     prompt: debug(prompt),
-                    //     res: debug(res),
-                    // },
-                    reg_form: req.body,
-
-                    errors: req.flash('error'),
-                });
+                // Redirect to confirmation static page
+                return res.redirect(`/confirm`);
             } catch (err) {
                 next(err);
             }

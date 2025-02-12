@@ -4,17 +4,20 @@ import {createTransport} from "nodemailer";
 
 export const transporter = createTransport(config.smtp);
 
-export const sendConfirmationEmail = async (user) => {
+export const sendConfirmationEmail = async (email, confirmation_code) => {
   // send mail with defined transport object
   const info = await transporter.sendMail({
     from: '"NBN:ID" <noreply@nextbestnetwork.com>', // sender address
-    to: user.email, // list of receivers
+    to: email, // list of receivers
     subject: "✔ NBN:ID Account Confirmation", // Subject line
     text: `NBN:ID Account Confirmation Email
     
-    Please visit http:// /confirm?${user.hmac_key}`, // plain text body
+    Please visit ${config.provider_url}confirm?${confirmation_code} to confirm your account`, // plain text body
 
-    html: "<b>Hello world?</b>", // html body
+    html: `<b>NBN:ID Account Confirmation Email<a><br>
+  <br>
+  Please visit <a href="${config.provider_url}confirm?${confirmation_code}">
+    ${config.provider_url}confirm?${confirmation_code}</a> to confirm your account`,
   });
 
   console.log("Message sent: %s", info);

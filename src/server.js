@@ -77,8 +77,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.use((req, res, next) => {
     const orig = res.render;
 
-    // you'll probably want to use a full blown render engine capable of layouts, but this does for now...
+    //  Before we dispatch to our renderer, inject our constant requirements
     res.render = (view, locals) => {
+        if(!locals) locals = {};
+
         app.render(view, locals, (err, html) => {
             if (err) throw err;
             orig.call(res, '_layout', {
@@ -93,6 +95,7 @@ app.use((req, res, next) => {
             });
         });
     };
+
     next();
 });
 

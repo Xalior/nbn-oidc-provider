@@ -1,9 +1,6 @@
-import { check, validationResult, matchedData } from 'express-validator';
 import { users, confirmation_codes } from '../db/schema.js';
 import { db } from "../db/index.js";
 import { eq, and, gte } from "drizzle-orm";
-import { sendConfirmationEmail} from "../lib/email.js";
-import {nanoid} from "nanoid";
 
 export default (app) => {
     app.get('/confirm', async (req, res, next) => {
@@ -11,18 +8,20 @@ export default (app) => {
             const age_limit = new Date(Date.now() - (60*30));
             const query_string = req.url.replace(/^\/confirm\?/, '');
 
+            // Search for a confirmation code that matches the raw query string
             const confirmation_code = await db.select()
-                .from(confirmation_codes)
-                .where(and(
-                    eq(confirmation_codes.invite_code, query_string),
-                    gte(confirmation_codes.created_at, age_limit)
-                ))
-                .limit(1)
-                .get();
+            .from(confirmation_codes)
+            .where(and(
+                eq(confirmation_codes.invite_code, query_string)
+            ))
+            .limit(1)
+            .get();
 
+            // If we found it, mark the user as confirmed, and redir to login
             if(confirmation_code) {
-                console.log(age_limit.getTime());
-                console.log("confirmation_code:",confirmation_code);
+                // Check for expired codes here, and handle accordingly
+                //                     gte(confirmation_codes.created_at, age_limit)
+                // removed from above query, so we can handle error messages instead
                 await db.update(users).set({
                     verified: true,
                     confirmed_at: new Date(Date.now()),
@@ -33,14 +32,8 @@ export default (app) => {
                 return res.redirect("/login");
             }
 
-            return res.render('confirm', {
-                // session: session ? debug(session) : undefined,
-                // dbg: {
-                //     params: debug(params),
-                //     prompt: debug(prompt),
-                //     res: debug(res),
-                // },
-            });
+            // SHush now, no need to tell them anything...
+            return res.render('confirm');
         } catch (err) {
             next(err);
         }

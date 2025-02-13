@@ -16,6 +16,7 @@
         "@libsql/client": "^0.14.0",
         "@libsql/core": "^0.14.0",
         "@popperjs/core": "^2.11.8",
+        "bcrypt": "^5.1.1",
         "bootstrap": "^5.3.3",
         "connect-ensure-login": "^0.1.1",
         "connect-flash": "^0.1.1",

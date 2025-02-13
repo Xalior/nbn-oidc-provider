@@ -1,5 +1,5 @@
-config.js
+data/config.js
 node_modules
 .idea
-sqlite.db
+data/sqlite.db
 log/*

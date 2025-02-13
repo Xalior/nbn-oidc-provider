@@ -1,10 +1,24 @@
 import {nanoid} from 'nanoid';
 import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import {and, eq} from 'drizzle-orm';
+import config from '../../data/config.js'
+import bcrypt from 'bcrypt';
 
 export const generateAccountId = ()=>{
     return nanoid(16)
+}
+
+const PASSWORD_SALT = config.password.salt;
+
+export const hashAccountPassword = async (password)=>{
+    try {
+        const salt = await bcrypt.genSalt(PASSWORD_SALT);
+        return await bcrypt.hash(password, salt);
+    } catch (error) {
+        console.log(error);
+        throw new Error('Error hashing password');
+    }
 }
 
 const ADAPTER_DEBUG = true;
@@ -46,17 +60,16 @@ export class Account {
         };
     }
 
-    static async findByLogin(login) {
-        if(ADAPTER_DEBUG) console.debug("findByLogin", login);
+    static async findByLogin(email, password) {
+        if(ADAPTER_DEBUG) console.debug("findByLogin", email);
 
         const user = await db.select()
             .from(users)
-            .where(eq(users.email, login))
-        // PASSWORD CHECKING HERE
+            .where(eq(users.email, email))
             .limit(1)
             .get();
 
-        if (!user) {
+        if (!user || !bcrypt.compare(password, user.password)) {
             return null;
         }
 

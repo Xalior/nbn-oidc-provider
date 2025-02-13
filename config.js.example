@@ -1,7 +1,7 @@
 export default {
     provider_url: "https://localhost/",
     mode: 'development',
-    database_url: 'file:sqlite.db',
+    database_url: 'file:data/sqlite.db',
     force_https: true,
 
     interactions: {

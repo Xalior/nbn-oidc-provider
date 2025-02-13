@@ -4,7 +4,7 @@ import { db } from "../db/index.js";
 import { eq, sql } from "drizzle-orm";
 import { sendConfirmationEmail} from "../lib/email.js";
 import {nanoid} from "nanoid";
-import {generateAccountId} from "../support/account.js";
+import {generateAccountId, hashAccountPassword} from "../support/account.js";
 
 export default (app) => {
     app.get('/register', async (req, res, next) => {
@@ -91,7 +91,7 @@ export default (app) => {
                 const [new_user] = await db.insert(users).values({
                     email: reg_form.email,
                     account_id: generateAccountId(),
-                    password: reg_form.password_1,
+                    password: await hashAccountPassword(reg_form.password_1),
                     display_name: reg_form.display_name,
                 }).returning();
 

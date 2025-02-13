@@ -1,5 +1,5 @@
 import QuickLRU from 'quick-lru';
-import config from "../config.js";
+import config from "../data/config.js";
 
 import epochTime from 'oidc-provider/lib/helpers/epoch_time.js';
 

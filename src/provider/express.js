@@ -122,7 +122,7 @@ export default (app, provider) => {
 
             assert.equal(details.prompt['name'], 'login');
 
-            const account = await Account.findByLogin(req.body.login);
+            const account = await Account.findByLogin(req.body.login, req.body.password);
 
             if(!account) {
                 req.flash('error', 'Login failed - try again...');

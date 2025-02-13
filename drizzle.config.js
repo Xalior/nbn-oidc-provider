@@ -3,6 +3,6 @@ export default {
   out: "./drizzle",
   dialect: "turso",
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'file:sqlite.db'
+    url: process.env.DATABASE_URL || 'file:data/sqlite.db'
   }
 }; 

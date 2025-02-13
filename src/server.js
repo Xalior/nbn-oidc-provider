@@ -12,7 +12,7 @@ import { dirname } from 'desm';
 import mustacheExpress from 'mustache-express';
 import Provider from 'oidc-provider';
 import { Account } from './support/account.js';
-import config from '../config.js';
+import config from '../data/config.js';
 import provider_routes from './provider/express.js';
 import client_routes from './client/routes.js';
 import morgan from 'morgan';

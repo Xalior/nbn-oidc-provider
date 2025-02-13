@@ -1,5 +1,5 @@
 
-import config from '../../config.js';
+import config from '../../data/config.js';
 import {createTransport} from "nodemailer";
 
 export const transporter = createTransport(config.smtp);

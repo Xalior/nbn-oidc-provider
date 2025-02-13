@@ -2,10 +2,18 @@ import {nanoid} from 'nanoid';
 import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
-import session from "express-session";
+
+export const generateAccountId = ()=>{
+    return nanoid(16)
+}
+
+const ADAPTER_DEBUG = true;
 
 export class Account {
     constructor(id, profile) {
+        if(id) {
+            console.log("ACCOUNT", id);
+        }
         this.accountId = id || nanoid();
         this.profile = profile;
     }
@@ -19,24 +27,14 @@ export class Account {
      *   or not return them in id tokens but only userinfo and so on.
      */
     async claims(use, scope) { // eslint-disable-line no-unused-vars
-        // if (this.profile) {
-        //     return {
-        //         sub: this.accountId, // it is essential to always return a sub claim
-        //         email: this.profile.email,
-        //         email_verified: this.profile.email_verified,
-        //         family_name: this.profile.family_name,
-        //         given_name: this.profile.given_name,
-        //         locale: this.profile.locale,
-        //         name: this.profile.name,
-        //     };
-        // }
+        if(ADAPTER_DEBUG) console.debug(`claims {\n\tuse:${use},\n\tscope:${scope}\n\tthis:`,this,`\n}`);
 
         const user = await db.select()
             .from(users)
-            .where(eq(users.id, this.accountId))
+            .where(eq(users.account_id, this.accountId))
+            .limit(1)
             .get();
-        //
-        // console.log("claims:", use, scope, this, "user:", user);
+
         return {
             sub: this.accountId,
             email: user.email,
@@ -49,16 +47,20 @@ export class Account {
     }
 
     static async findByLogin(login) {
+        if(ADAPTER_DEBUG) console.debug("findByLogin", login);
+
         const user = await db.select()
             .from(users)
             .where(eq(users.email, login))
+        // PASSWORD CHECKING HERE
+            .limit(1)
             .get();
 
         if (!user) {
             return null;
         }
 
-        return new Account(user.id, {
+        return new Account(user.account_id, {
             email: user.email,
             email_verified: user.email_verified,
             family_name: user.family_name,
@@ -69,20 +71,22 @@ export class Account {
     }
 
     static async findAccount(ctx, id, token) { // eslint-disable-line no-unused-vars
+        if(ADAPTER_DEBUG) console.debug("findAccount", id, "token=",token);
         // token is a reference to the token used for which a given account is being loaded,
         //   it is undefined in scenarios where account claims are returned from authorization endpoint
         // ctx is the http request context
 
         const user = await db.select()
             .from(users)
-            .where(eq(users.id, id))
+            .where(eq(users.account_id, id))
+            .limit(1)
             .get();
 
         if (!user) {
             return null; // maintain existing behavior for OIDC
         }
 
-        return new Account(user.id, {
+        return new Account(user.account_id, {
             email: user.email,
             email_verified: user.email_verified,
             family_name: user.family_name,

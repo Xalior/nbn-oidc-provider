@@ -166,6 +166,11 @@ try {
         app.enable('trust proxy');
         provider.proxy = true;
 
+        provider.addListener('server_error', (etx, error) => {
+            console.log(etx, error);
+            console.error(JSON.stringify(error, null, 2));
+        });
+
         app.use((req, res, next) => {
             if (req.secure) {
                 next();

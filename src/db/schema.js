@@ -4,6 +4,7 @@ import {nanoid} from "nanoid";
 
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  account_id: text('account_id').notNull().unique(),
   email: text('email').notNull().unique(),
   password: text('password').notNull(), // Should store hashed passwords only
   verified: integer('verified', { mode: 'boolean' }).notNull().default(false),

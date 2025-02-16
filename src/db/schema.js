@@ -21,6 +21,6 @@ export const users = sqliteTable('users', {
 export const confirmation_codes = sqliteTable('confirmation_codes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   user_id: integer('user_id').references(() => users.id),
-  invite_code: text('invite_code').notNull().unique(),
+  confirmation_code: text('confirmation_code').notNull().unique(),
   created_at: text('created_at').notNull().default(sql`(current_timestamp)`),
 });

@@ -125,7 +125,7 @@ export default (app, provider) => {
             const account = await Account.findByLogin(req.body.login, req.body.password);
 
             if(!account) {
-                req.flash('error', 'Login failed - try again...');
+                req.flash('error', 'Login failed, try again.<br> Or maybe you <a href="/lost_password">lost your password</a>?');
 
                 return res.redirect(`/interaction/${details.jti}`);
             }
@@ -152,7 +152,7 @@ export default (app, provider) => {
             const account = await Account.findAccount(null, req.session.mfa_account_id);
 
             if(!account) {
-                req.flash('error', 'Login failed - try again...');
+                req.flash('error', 'Unexpected MFA association!');
 
                 return res.redirect(`/interaction/${details.jti}`);
             }
@@ -227,11 +227,16 @@ export default (app, provider) => {
 
     app.get('/interaction/:uid/abort', setNoCache, async (req, res, next) => {
         try {
+            // const details = await provider.interactionDetails(req, res);
+            // const client = await provider.Client.find(details.params.client_id);
             const result = {
                 error: 'access_denied',
                 error_description: 'End-User aborted interaction',
             };
+
+
             await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
+
         } catch (err) {
             next(err);
         }
@@ -239,6 +244,8 @@ export default (app, provider) => {
 
     app.use((err, req, res, next) => {
         if (err instanceof SessionNotFound) {
+            req.flash('error', 'Session expired - please log in again&hellip;');
+            res.redirect('/login');
             throw SessionNotFound;
             // handle interaction expired / session not found error
         }

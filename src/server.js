@@ -4,7 +4,6 @@ import * as url from 'node:url';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
-import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import flash from 'connect-flash';
 import helmet from 'helmet';
@@ -16,6 +15,8 @@ import config from '../data/config.js';
 import provider_routes from './provider/express.js';
 import client_routes from './client/routes.js';
 import morgan from 'morgan';
+import bodyParser from "body-parser";
+import slugify from "slugify";
 
 import * as openidClient from 'openid-client'
 import passport from 'passport';
@@ -36,7 +37,6 @@ const app = express();
 app.use(morgan('combined'));//, { stream: accessLogStream }))
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 
 app.use(session({
     secret: 'nbn-id-dev',
@@ -81,6 +81,8 @@ app.use((req, res, next) => {
     res.render = (view, locals) => {
         if(!locals) locals = {};
 
+        if(['login'].includes(view)) locals.hide_header = true;
+
         app.render(view, locals, (err, html) => {
             if (err) throw err;
             orig.call(res, '_layout', {
@@ -106,7 +108,6 @@ let server, issuer;
 
 const provider_url = new URL(config.provider_url);
 
-
 client_routes(app);
 
 app.get('/login',
@@ -115,6 +116,17 @@ app.get('/login',
         failureFlash: true,
         keepSessionInfo: true
     })
+);
+
+app.get('/docs/:path',
+    function(req, res, next) {
+        try{
+            const path = slugify(req.params.path);
+            return res.render(path);
+        } catch (err) {
+            return res.status(404).send("Not Found");
+        }
+    }
 );
 
 app.get('/callback',

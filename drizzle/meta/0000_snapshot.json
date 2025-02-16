@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "506e83f8-75a1-4dec-a141-54d0d2eecdae",
+  "id": "bd6b8859-671c-4636-a395-fc34d3740e17",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "confirmation_codes": {
@@ -21,8 +21,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "invite_code": {
-          "name": "invite_code",
+        "confirmation_code": {
+          "name": "confirmation_code",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -38,10 +38,10 @@
         }
       },
       "indexes": {
-        "confirmation_codes_invite_code_unique": {
-          "name": "confirmation_codes_invite_code_unique",
+        "confirmation_codes_confirmation_code_unique": {
+          "name": "confirmation_codes_confirmation_code_unique",
           "columns": [
-            "invite_code"
+            "confirmation_code"
           ],
           "isUnique": true
         }

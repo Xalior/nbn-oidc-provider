@@ -1,12 +1,12 @@
 CREATE TABLE `confirmation_codes` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`user_id` integer,
-	`invite_code` text NOT NULL,
+	`confirmation_code` text NOT NULL,
 	`created_at` text DEFAULT (current_timestamp) NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `confirmation_codes_invite_code_unique` ON `confirmation_codes` (`invite_code`);--> statement-breakpoint
+CREATE UNIQUE INDEX `confirmation_codes_confirmation_code_unique` ON `confirmation_codes` (`confirmation_code`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`account_id` text NOT NULL,

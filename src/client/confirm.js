@@ -12,7 +12,7 @@ export default (app) => {
             const confirmation_code = await db.select()
             .from(confirmation_codes)
             .where(and(
-                eq(confirmation_codes.invite_code, query_string)
+                eq(confirmation_codes.confirmation_code, query_string)
             ))
             .limit(1)
             .get();

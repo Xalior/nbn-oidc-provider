@@ -38,7 +38,7 @@ export default (app) => {
                     throw new Error("The account associated with this email address has been suspended.");
                 }
 
-                throw new Error("User already exists - do you need to <a href=\"/reset\">reset your password</a>?");
+                throw new Error("User already exists - do you need to <a href=\"/lost_password\">reset your password</a>?");
             } else {
                 return value;
             }
@@ -65,6 +65,8 @@ export default (app) => {
         // Actual page response
         async (req, res, next) => {
             try {
+
+                console.log(req);
                 if(req.body.confirm_spammer === 'on') {
                     // Redirect to confirmation static page -- the email= slug only logs the email address in the weblog
                     // it's a red herring in a honeypot ;-)  -- but stored lazily so we can maybe report on it later...
@@ -97,11 +99,10 @@ export default (app) => {
 
                 const [confirmation_code] = await db.insert(confirmation_codes).values({
                     user_id: new_user.id,
-                    invite_code: nanoid(52),
-                    display_name: reg_form.display_name,
+                    confirmation_code: nanoid(52)
                 }).returning();
 
-                await sendConfirmationEmail(new_user.email, confirmation_code.invite_code);
+                await sendConfirmationEmail(new_user.email, confirmation_code.confirmation_code);
 
                 // Redirect to confirmation static page
                 return res.redirect(`/confirm`);

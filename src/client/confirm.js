@@ -11,14 +11,21 @@ export default (app) => {
             // Search for a confirmation code that matches the raw query string
             const confirmation_code = await db.select()
             .from(confirmation_codes)
-            .where(and(
+            .where(
                 eq(confirmation_codes.confirmation_code, query_string)
-            ))
+            )
             .limit(1)
             .get();
 
             // If we found it, mark the user as confirmed, and redir to login
             if(confirmation_code) {
+                if(confirmation_code.used === true) {
+                    req.flash('info', "This account has already been activated once!");
+
+                    return req.redirect('/login');
+                }
+
+
                 // Check for expired codes here, and handle accordingly
                 //                     gte(confirmation_codes.created_at, age_limit)
                 // removed from above query, so we can handle error messages instead
@@ -27,7 +34,15 @@ export default (app) => {
                     confirmed_at: new Date(Date.now()),
                 }).where(eq(users.id, confirmation_code.user_id));
 
-                req.flash('info', 'Account confirmed - please login to continue');
+                await db.update(confirmation_codes).set({
+                    used: true,
+                })
+                .where(
+                    eq(confirmation_codes.confirmation_code, query_string)
+                )
+                .returning();
+
+                req.flash('success', 'Account confirmed - please login to continue');
 
                 return res.redirect("/login");
             }

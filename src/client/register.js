@@ -65,8 +65,6 @@ export default (app) => {
         // Actual page response
         async (req, res, next) => {
             try {
-
-                console.log(req);
                 if(req.body.confirm_spammer === 'on') {
                     // Redirect to confirmation static page -- the email= slug only logs the email address in the weblog
                     // it's a red herring in a honeypot ;-)  -- but stored lazily so we can maybe report on it later...

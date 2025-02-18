@@ -28,7 +28,7 @@ export default (app) => {
                 }
 
                 const validation_errors = validationResult(req)?.errors;
-
+                console.log("validation_errors",validation_errors);
                 if(validation_errors.length) {
                     req.body.errors = [];
 
@@ -36,7 +36,7 @@ export default (app) => {
                         req.body.errors[error.path] = error.msg;
                     })
 
-                    console.log(req.body);
+                    console.log("req.body being sent to conf_form", req.body);
                     return res.render('lost_password', {
                         conf_form: req.body
                     });

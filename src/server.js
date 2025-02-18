@@ -4,7 +4,6 @@ import * as url from 'node:url';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
-import cookieParser from 'cookie-parser';
 import flash from 'connect-flash';
 import helmet from 'helmet';
 import { dirname } from 'desm';
@@ -12,6 +11,7 @@ import mustacheExpress from 'mustache-express';
 import Provider from 'oidc-provider';
 import { Account } from './support/account.js';
 import config from '../data/config.js';
+import * as log from './lib/log.js';
 import provider_routes from './provider/express.js';
 import client_routes from './client/routes.js';
 import morgan from 'morgan';
@@ -21,7 +21,6 @@ import slugify from "slugify";
 import * as openidClient from 'openid-client'
 import passport from 'passport';
 import { Strategy } from 'openid-client/passport'
-import * as RotatingFileStream from "rotating-file-stream";
 
 const __dirname = dirname(import.meta.url);
 
@@ -34,7 +33,7 @@ config.findAccount = Account.findAccount;
 const app = express();
 
 // setup the logger
-app.use(morgan('combined'));//, { stream: accessLogStream }))
+app.use(morgan('combined', { stream: log.logstream }))
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -93,6 +92,7 @@ app.use((req, res, next) => {
                 errors: req.flash('error'),
                 infos: req.flash('info'),
                 warnings: req.flash('warning'),
+                successes: req.flash('success'),
 
             });
         });
@@ -138,8 +138,8 @@ app.get('/callback',
 
     // Executed on successful login
     function(req, res) {
-        console.log("Callback URL triggered");
-        console.log(req.user, req.session);
+        // console.log("Callback URL triggered");
+        // console.log(req.user, req.session);
         res.redirect('/');
     }
 );
@@ -161,7 +161,6 @@ passport.serializeUser((user, cb) => {
 passport.deserializeUser((user, cb) => {
     return cb(null, user)
 })
-
 
 let claims = [];
 
@@ -207,11 +206,11 @@ try {
 
     // Start the server
     server = app.listen(PORT, () => {
-        console.log(`Application is listening on port ${PORT}`);
-        console.log(`Check /.well-known/openid-configuration for details.`);
+        console.info(`Application is listening on port ${PORT}`);
+        console.info(`Check /.well-known/openid-configuration for details.`);
     });
 
-    console.log("Being period of self discovery: ", config.provider_url);
+    console.info("Being period of self discovery: ", config.provider_url);
 
     issuer = await openidClient.discovery(
         provider_url,
@@ -245,7 +244,11 @@ try {
         }
     ));
 
-
+    // Error handling function(s) must be registered last...
+    app.use((err, req, res, next) => {
+        console.error(err);
+        res.status(500).render('error', {});
+    })
 } catch (err) {
     // Gracefully handle errors
     if (server?.listening) server.close();

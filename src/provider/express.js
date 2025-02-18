@@ -245,8 +245,8 @@ export default (app, provider) => {
     app.use((err, req, res, next) => {
         if (err instanceof SessionNotFound) {
             req.flash('error', 'Session expired - please log in again&hellip;');
-            res.redirect('/login');
-            throw SessionNotFound;
+            return res.redirect('/login');
+            // throw SessionNotFound;
             // handle interaction expired / session not found error
         }
         next(err);

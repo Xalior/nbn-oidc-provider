@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer,  } from 'drizzle-orm/sqlite-core';
 import {sql} from "drizzle-orm";
 import {nanoid} from "nanoid";
 
@@ -22,5 +22,6 @@ export const confirmation_codes = sqliteTable('confirmation_codes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   user_id: integer('user_id').references(() => users.id),
   confirmation_code: text('confirmation_code').notNull().unique(),
+  used: integer('used', { mode: 'boolean' }).notNull().default(false),
   created_at: text('created_at').notNull().default(sql`(current_timestamp)`),
 });

@@ -65,7 +65,13 @@ export class Account {
 
         const user = await db.select()
             .from(users)
-            .where(eq(users.email, email))
+            .where(and
+                (
+                    eq(users.email, email),
+                    eq(users.verified, true),
+                    eq(users.suspended, false),
+                )
+            )
             .limit(1)
             .get();
 

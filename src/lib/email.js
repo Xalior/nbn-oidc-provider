@@ -1,4 +1,3 @@
-
 import config from '../../data/config.js';
 import {createTransport} from "nodemailer";
 

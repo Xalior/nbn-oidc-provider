@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "0154ca4f-4423-440b-88bc-6f50e1d40f7d",
+  "id": "b7e6937c-c6f3-436d-b0e4-0e0440cd0d5a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "confirmation_codes": {
@@ -139,14 +139,16 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         },
         "login_attempts": {
           "name": "login_attempts",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         },
         "confirmed_at": {
           "name": "confirmed_at",

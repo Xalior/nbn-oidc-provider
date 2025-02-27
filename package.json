@@ -3,15 +3,6 @@
     "version": "1.0.0",
     "description": "",
     "main": "src/server.js",
-    "scripts": {
-        "start": "node ./src/server.js",
-        "build": "npx webpack build",
-        "nodemon": "nodemon ",
-        "db:generate": "drizzle-kit generate",
-        "db:migrate": "drizzle-kit migrate",
-        "db:push": "drizzle-kit push",
-        "db:remake": "rm -rf drizzle && rm -rf data/sqlite.db && npm run db:generate && npm run db:push"
-    },
     "private": true,
     "dependencies": {
         "@libsql/client": "^0.14.0",
@@ -58,5 +49,14 @@
         "webpack": "^5.97.1",
         "webpack-cli": "^6.0.1",
         "webpack-dev-server": "^5.2.0"
+    },
+    "scripts": {
+        "start": "node ./src/server.js",
+        "build": "npx webpack build",
+        "nodemon": "nodemon ",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit migrate",
+        "db:push": "drizzle-kit push",
+        "db:remake": "rm -rf drizzle && rm -rf data/sqlite.db && npm run db:generate && npm run db:push"
     }
 }

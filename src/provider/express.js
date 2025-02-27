@@ -57,13 +57,13 @@ export default (app, provider) => {
             }));
 
             const rar = prompt.details.rar || [];
-            const processedRar = rar.map(({ type, ...detail }) => ({
-                jsonString: JSON.stringify({ type, ...detail }, null, 4),
-            }));
-
-            const isOfflineAccessRequested = params.scope && params.scope.includes('offline_access');
-            const hasPreviouslyGrantedOfflineAccess =
-                !prompt.details.missingOIDCScope || !prompt.details.missingOIDCScope.includes('offline_access');
+            // const processedRar = rar.map(({ type, ...detail }) => ({
+            //     jsonString: JSON.stringify({ type, ...detail }, null, 4),
+            // }));
+            //
+            // const isOfflineAccessRequested = params.scope && params.scope.includes('offline_access');
+            // const hasPreviouslyGrantedOfflineAccess =
+            //     !prompt.details.missingOIDCScope || !prompt.details.missingOIDCScope.includes('offline_access');
 
             console.log("Login Form Session: ", req.session);
 
@@ -84,7 +84,7 @@ export default (app, provider) => {
                     });
                 }
 
-                // We are a "closed circuit" network, with locked down clients and providers - so consent is implied
+                // We are a "closed circuit" network, with locked down clients and providers - so consent is implied - we should never end up here...
                 case 'consent': {
                 //     return res.render('interaction', {
                 //         client,
@@ -105,6 +105,7 @@ export default (app, provider) => {
                 //             res: debug(res),
                 //         },
                 //     });
+                    // 'throw'ing will generate a log, and give a 500 error - best we can do in this circumstance
                     throw(new Error(`Unexpected consent request (filteredMissingOIDCScope:${filteredMissingOIDCScope} eachMissingResourceScope:${eachMissingResourceScope} filteredMissingOIDCClaims:${filteredMissingOIDCClaims})`));
                 }
 

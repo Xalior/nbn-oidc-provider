@@ -17,8 +17,8 @@ CREATE TABLE `users` (
 	`suspended` integer DEFAULT false NOT NULL,
 	`hmac_key` text,
 	`display_name` text NOT NULL,
-	`confirmation_attempts` integer,
-	`login_attempts` integer,
+	`confirmation_attempts` integer DEFAULT 0,
+	`login_attempts` integer DEFAULT 0,
 	`confirmed_at` text,
 	`created_at` text DEFAULT (current_timestamp) NOT NULL
 );

@@ -75,7 +75,15 @@ export class Account {
             .limit(1)
             .get();
 
-        if (!user || !bcrypt.compare(password, user.password)) {
+        // User not found
+        if(!user) return null;
+
+        // Password wrong?
+        if (!bcrypt.compare(password, user.password)) {
+            await db.update(users).set({
+                login_attempts: user.constructor+1,
+            }).where(eq(users.id, user.id));
+
             return null;
         }
 

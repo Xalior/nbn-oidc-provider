@@ -1,7 +1,7 @@
 import {nanoid} from 'nanoid';
 import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
-import {and, eq} from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import config from '../../data/config.js'
 import bcrypt from 'bcrypt';
 

@@ -4,7 +4,7 @@ import { db } from "../db/index.js";
 import { eq, and } from "drizzle-orm";
 import {sendPasswordResetEmail} from "../lib/email.js";
 import {nanoid} from "nanoid";
-import {generateAccountId, hashAccountPassword} from "../support/account.js";
+import {generateAccountId, hashAccountPassword} from "../models/account.js";
 
 export default (app) => {
 

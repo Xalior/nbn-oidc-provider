@@ -207,6 +207,7 @@ class NbnAdapter {
         }
 
         storage.set(key, payload, expiresIn * 1000);
+        console.info("STORE:", storage)
     }
 
     /**

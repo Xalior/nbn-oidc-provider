@@ -4,7 +4,7 @@ import { db } from "../db/index.js";
 import { eq, sql } from "drizzle-orm";
 import { sendConfirmationEmail} from "../lib/email.js";
 import {nanoid} from "nanoid";
-import {generateAccountId, hashAccountPassword} from "../support/account.js";
+import {generateAccountId, hashAccountPassword} from "../models/account.js";
 
 export default (app) => {
     app.get('/register', async (req, res, next) => {

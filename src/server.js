@@ -9,7 +9,7 @@ import helmet from 'helmet';
 import { dirname } from 'desm';
 import mustacheExpress from 'mustache-express';
 import Provider from 'oidc-provider';
-import { Account } from './support/account.js';
+import { Account } from './models/account.js';
 import config from '../data/config.js';
 import * as log from './lib/log.js';
 import provider_routes from './provider/express.js';

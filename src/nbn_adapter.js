@@ -1,4 +1,5 @@
 import QuickLRU from 'quick-lru';
+import {Client} from './models/clients.js';
 import config from "../data/config.js";
 
 import epochTime from 'oidc-provider/lib/helpers/epoch_time.js';
@@ -221,7 +222,7 @@ class NbnAdapter {
      *
      */
     async find(id) {
-        const item = storage.get(this.key(id));
+        let item = storage.get(this.key(id));
 
         if(DEBUG_ADAPTER) {
             if (item) {
@@ -232,26 +233,7 @@ class NbnAdapter {
         }
 
         if(this.model==='Client') {
-            switch(id) {
-                case 'CLIENT_ID':
-                    return {
-                        client_id: 'CLIENT_ID',
-                        client_secret: 'CLIENT_SECRET',
-                        grant_requirements: ['ADMIN'],
-                        grant_types: ['refresh_token', 'authorization_code'],
-                        redirect_uris: ['https://psteniusubi.github.io/oidc-tester/authorization-code-flow.html'],
-                        post_logout_redirect_uris: ['https://psteniusubi.github.io/oidc-tester/logout-redirect'],
-                    }
-                case 'SELF':
-                    return {
-                        client_id: 'SELF',
-                        client_secret: 'SELF_SECRET',
-                        grant_requirements: ['ADMIN'],
-                        grant_types: ['refresh_token', 'authorization_code'],
-                        redirect_uris: [`${config.provider_url}callback`],
-                        post_logout_redirect_uris: [config.provider_url],
-                    }
-            }
+            item = Client.findByClientId(id);
         }
 
         return item;
@@ -286,7 +268,7 @@ class NbnAdapter {
      *
      */
     async findByUid(uid) {
-        if(DEBUG_ADAPTER) console.debug('adapter findByUid', uid, 'on', this.model);
+        if(DEBUG_ADAPTER) console.debug('adapter find(session)ByUid', uid, 'on', this.model);
         const id = storage.get(sessionUidKeyFor(uid));
         return this.find(id);
 
@@ -319,7 +301,7 @@ class NbnAdapter {
      *
      */
     async destroy(id) {
-        if(DEBUG_ADAPTER) console.debug('adapter destroy', this.key(id), 'on', this.model);
+        if(DEBUG_ADAPTER) console.debug('adapter DESTROY', this.key(id), 'on', this.model);
         const key = this.key(id);
         storage.delete(key);
     }

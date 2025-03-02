@@ -1,8 +1,10 @@
+import config from './data/config.js';
+
 export default {
   schema: "./src/db/schema.js",
   out: "./drizzle",
-  dialect: "turso",
+  dialect: "mysql",
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'file:data/sqlite.db'
+    url: config.database_url
   }
 }; 

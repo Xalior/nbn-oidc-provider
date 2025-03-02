@@ -1,12 +1,12 @@
 {
   "version": "7",
-  "dialect": "sqlite",
+  "dialect": "mysql",
   "entries": [
     {
       "idx": 0,
-      "version": "6",
-      "when": 1739906331993,
-      "tag": "0000_spotty_shockwave",
+      "version": "5",
+      "when": 1740958012018,
+      "tag": "0000_swift_tombstone",
       "breakpoints": true
     }
   ]

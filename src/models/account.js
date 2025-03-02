@@ -126,7 +126,7 @@ export class Account {
 
 export const ensureAuthenticated = (req, res, next) => {
     if (req.isAuthenticated()) {
-        return next()
+        return next();
     }
     req.session.destination_path = req.route.path;
     res.redirect('/login') // if not auth
@@ -134,7 +134,7 @@ export const ensureAuthenticated = (req, res, next) => {
 
 export const forwardAuthenticated = (req, res, next) => {
     if (!req.isAuthenticated()) {
-        return next()
+        return next();
     }
     res.redirect('/profile');  // if auth
 }

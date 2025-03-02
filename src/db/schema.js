@@ -1,27 +1,37 @@
-import { sqliteTable, text, integer,  } from 'drizzle-orm/sqlite-core';
+import { mysqlTable, text, int, timestamp } from 'drizzle-orm/mysql-core';
 import {sql} from "drizzle-orm";
-import {nanoid} from "nanoid";
 
-export const users = sqliteTable('users', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  account_id: text('account_id').notNull().unique(),
-  email: text('email').notNull().unique(),
+export const users = mysqlTable('users', {
+  id: int('id').primaryKey({ autoIncrement: true }),
+  account_id: text('account_id').notNull(),
+  email: text('email').notNull(),
   password: text('password').notNull(), // Should store hashed passwords only
-  verified: integer('verified', { mode: 'boolean' }).notNull().default(false),
-  suspended: integer('suspended', { mode: 'boolean' }).notNull().default(false),
+  verified: int('verified', { mode: 'boolean' }).notNull().default(false),
+  suspended: int('suspended', { mode: 'boolean' }).notNull().default(false),
   hmac_key: text('hmac_key'),
   display_name: text('display_name').notNull(),
-  confirmation_attempts: integer('confirmation_attempts').default(0),
-  login_attempts: integer('login_attempts').default(0),
-  confirmation_sent: integer('confirmed_at', { mode: 'timestamp' }),
-  confirmed_at: text('confirmed_at'),
-  created_at: text('created_at').notNull().default(sql`(current_timestamp)`),
+  confirmation_attempts: int('confirmation_attempts').default(0),
+  login_attempts: int('login_attempts').default(0),
+  confirmation_sent: int('confirmed_at', { mode: 'timestamp' }),
+  confirmed_at: timestamp('confirmed_at'),
+  created_at: timestamp('created_at').notNull().defaultNow(),
 });
 
-export const confirmation_codes = sqliteTable('confirmation_codes', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  user_id: integer('user_id').references(() => users.id),
-  confirmation_code: text('confirmation_code').notNull().unique(),
-  used: integer('used', { mode: 'boolean' }).notNull().default(false),
-  created_at: text('created_at').notNull().default(sql`(current_timestamp)`),
+export const confirmation_codes = mysqlTable('confirmation_codes', {
+  id: int('id').primaryKey({ autoIncrement: true }),
+  user_id: int('user_id').references(() => users.id),
+  confirmation_code: text('confirmation_code').notNull(),
+  used: int('used', { mode: 'boolean' }).notNull().default(false),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const clients = mysqlTable('clients', {
+  id: int('id').primaryKey({ autoIncrement: true }),
+  client_id: text('client_id').notNull(),
+  client_secret: text('client_secret').notNull(),
+  grant_requirements: text('grant_requirements'),
+  grant_types: text('grant_types'),
+  redirect_uris: text('redirect_uris'),
+  post_logout_redirect_uris: text('post_logout_redirect_uris'),
+  created_at: timestamp('created_at').notNull().defaultNow(),
 });

@@ -56,7 +56,7 @@ export default (app) => {
                     const [confirmation_code] = await db.insert(confirmation_codes).values({
                         user_id: existing_user.id,
                         confirmation_code: nanoid(52)
-                    }).returning();
+                    }).returning();  //:FIXME - sqlite
 
                     await sendPasswordResetEmail(existing_user.email, confirmation_code.confirmation_code);
                 }

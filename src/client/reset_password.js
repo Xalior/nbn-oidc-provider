@@ -85,7 +85,7 @@ export default (app) => {
                         password: await hashAccountPassword(reset_form.password_1),
                     })
                     .where(eq(confirmation_details.users.id, users.id))
-                    .returning();
+                    .returning();  //:FIXME - sqlite
 
                     await db.update(confirmation_codes).set({
                         used: true,
@@ -93,7 +93,7 @@ export default (app) => {
                     .where(
                         eq(confirmation_codes.confirmation_code, query_string)
                     )
-                    .returning();
+                    .returning();  //:FIXME - sqlite
 
                     console.log("Matching ",confirmation_details, " updated ", new_user);
                 } else {

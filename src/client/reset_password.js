@@ -75,8 +75,7 @@ export default (app) => {
                             eq(confirmation_codes.used, false)
                         )
                     )
-                    // .limit(1)
-                    .get();
+                    .limit(1);
 
                 const reset_form = matchedData(req, { includeOptionals: true });
 

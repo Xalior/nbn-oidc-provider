@@ -23,24 +23,28 @@ export default (app) => {
 
         check('email').trim().notEmpty().isEmail().withMessage('Not a valid e-mail address').custom(
     async (value,{req, loc, path}) => {
-            const existing_user = await db.select()
+            try {
+                const existing_user = await db.select()
                 .from(users)
                 .where(eq(users.email, value))
-                .limit(1)
-                .get();
+                .limit(1);
 
-            if (existing_user) {
-                if(!existing_user.verified) {
-                    throw new Error("User already exists - have <a href=\"reconfirm\">lost your confirmation link</a>?");
+                if (existing_user.length) {
+                    if (!existing_user.verified) {
+                        throw new Error("User already exists - have <a href=\"reconfirm\">lost your confirmation link</a>?");
+                    }
+
+                    if (existing_user.suspended) {
+                        throw new Error("The account associated with this email address has been suspended.");
+                    }
+
+                    throw new Error("User already exists - do you need to <a href=\"/lost_password\">reset your password</a>?");
+                } else {
+                    return value;
                 }
-
-                if(existing_user.suspended){
-                    throw new Error("The account associated with this email address has been suspended.");
-                }
-
-                throw new Error("User already exists - do you need to <a href=\"/lost_password\">reset your password</a>?");
-            } else {
-                return value;
+            } catch (err) {
+                console.log(err);
+                throw new Error(err);
             }
         }),
 
@@ -71,6 +75,8 @@ export default (app) => {
                     return res.redirect(`/confirm?email=${req.body.email}`);
                 }
 
+                console.log("validationResult(req)",validationResult(req));
+
                 const validation_errors = validationResult(req)?.errors;
 
                 if(validation_errors.length) {
@@ -88,19 +94,24 @@ export default (app) => {
 
                 const reg_form = matchedData(req, { includeOptionals: true });
 
-                const [new_user] = await db.insert(users).values({
+                const new_user_id = await db.insert(users).values({
                     email: reg_form.email,
                     account_id: generateAccountId(),
                     password: await hashAccountPassword(reg_form.password_1),
                     display_name: reg_form.display_name,
-                }).returning();
+                }).$returningId();
 
-                const [confirmation_code] = await db.insert(confirmation_codes).values({
+                const confirmation_code_id = await db.insert(confirmation_codes).values({
                     user_id: new_user.id,
                     confirmation_code: nanoid(52)
-                }).returning();
+                }).$returningId();
 
-                await sendConfirmationEmail(new_user.email, confirmation_code.confirmation_code);
+                const confirmation_code = await db.select()
+                .from(confirmation_codes)
+                .where(eq(confirmation_codes.id, confirmation_code_id[0].id))
+                .limit(1);
+
+                await sendConfirmationEmail(req.body.email, confirmation_code.confirmation_code);
 
                 // Redirect to confirmation static page
                 return res.redirect(`/confirm`);

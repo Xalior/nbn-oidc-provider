@@ -19,12 +19,13 @@ export class Client {
         const client = await db.select()
             .from(clients)
             .where(eq(clients.client_id, client_id))
-            .limit(1)
-            .get();
+            .limit(1);
+
+        console.log("client:", client);
 
         // OIDC Client site not found
-        if(!client) return null;
+        if(!client.length) return null;
 
-        return new Client(client);
+        return new Client(client[0]);
     }
 }

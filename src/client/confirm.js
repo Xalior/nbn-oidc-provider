@@ -14,8 +14,7 @@ export default (app) => {
             .where(
                 eq(confirmation_codes.confirmation_code, query_string)
             )
-            .limit(1)
-            .get();
+            .limit(1);
 
             // If we found it, mark the user as confirmed, and redir to login
             if(confirmation_code) {

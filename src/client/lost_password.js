@@ -50,8 +50,7 @@ export default (app) => {
                         eq(users.email, conf_form.email),
                         eq(users.verified, 1),
                     ))
-                    .limit(1)
-                    .get();
+                    .limit(1);
 
                 if (existing_user) {
                     const [confirmation_code] = await db.insert(confirmation_codes).values({

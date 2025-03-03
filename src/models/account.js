@@ -46,8 +46,7 @@ export class Account {
         const user = await db.select()
             .from(users)
             .where(eq(users.account_id, this.accountId))
-            .limit(1)
-            .get();
+            .limit(1);
 
         return {
             sub: this.accountId,
@@ -72,8 +71,7 @@ export class Account {
                     eq(users.suspended, false),
                 )
             )
-            .limit(1)
-            .get();
+            .limit(1);
 
         // User not found
         if(!user) return null;
@@ -106,8 +104,7 @@ export class Account {
         const user = await db.select()
             .from(users)
             .where(eq(users.account_id, id))
-            .limit(1)
-            .get();
+            .limit(1);
 
         if (!user) {
             return null; // maintain existing behavior for OIDC

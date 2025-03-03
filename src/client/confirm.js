@@ -16,9 +16,10 @@ export default (app) => {
             )
             .limit(1);
 
+            console.log(confirmation_code);
             // If we found it, mark the user as confirmed, and redir to login
-            if(confirmation_code) {
-                if(confirmation_code.used === true) {
+            if(confirmation_code.length) {
+                if(confirmation_code[0].used === true) {
                     req.flash('info', "This account has already been activated once!");
 
                     return req.redirect('/login');
@@ -31,15 +32,14 @@ export default (app) => {
                 await db.update(users).set({
                     verified: true,
                     confirmed_at: new Date(Date.now()),
-                }).where(eq(users.id, confirmation_code.user_id));
+                }).where(eq(users.id, confirmation_code[0].user_id));
 
                 await db.update(confirmation_codes).set({
                     used: true,
                 })
                 .where(
                     eq(confirmation_codes.confirmation_code, query_string)
-                )
-                .returning();
+                );
 
                 req.flash('success', 'Account confirmed - please login to continue');
 

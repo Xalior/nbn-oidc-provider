@@ -43,10 +43,10 @@ export class Account {
     async claims(use, scope) { // eslint-disable-line no-unused-vars
         if(ADAPTER_DEBUG) console.debug(`claims {\n\tuse:${use},\n\tscope:${scope}\n\tthis:`,this,`\n}`);
 
-        const user = await db.select()
+        const user = (await db.select()
             .from(users)
             .where(eq(users.account_id, this.accountId))
-            .limit(1);
+            .limit(1))[0];
 
         return {
             sub: this.accountId,
@@ -62,7 +62,7 @@ export class Account {
     static async findByLogin(email, password) {
         if(ADAPTER_DEBUG) console.debug("findByLogin", email);
 
-        const user = await db.select()
+        const user = (await db.select()
             .from(users)
             .where(and
                 (
@@ -71,8 +71,9 @@ export class Account {
                     eq(users.suspended, false),
                 )
             )
-            .limit(1);
+            .limit(1))[0];
 
+        console.log(user);
         // User not found
         if(!user) return null;
 
@@ -101,10 +102,10 @@ export class Account {
         //   it is undefined in scenarios where account claims are returned from authorization endpoint
         // ctx is the http request context
 
-        const user = await db.select()
+        const user = (await db.select()
             .from(users)
             .where(eq(users.account_id, id))
-            .limit(1);
+            .limit(1))[0];
 
         if (!user) {
             return null; // maintain existing behavior for OIDC

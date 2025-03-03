@@ -24,10 +24,10 @@ export default (app) => {
         check('email').trim().notEmpty().isEmail().withMessage('Not a valid e-mail address').custom(
     async (value,{req, loc, path}) => {
             try {
-                const existing_user = await db.select()
+                const existing_user = (await db.select()
                 .from(users)
                 .where(eq(users.email, value))
-                .limit(1);
+                .limit(1))[0];
 
                 if (existing_user.length) {
                     if (!existing_user.verified) {
@@ -94,22 +94,22 @@ export default (app) => {
 
                 const reg_form = matchedData(req, { includeOptionals: true });
 
-                const new_user_id = await db.insert(users).values({
+                const new_user_id = (await db.insert(users).values({
                     email: reg_form.email,
                     account_id: generateAccountId(),
                     password: await hashAccountPassword(reg_form.password_1),
                     display_name: reg_form.display_name,
-                }).$returningId();
+                }).$returningId())[0].id;
 
-                const confirmation_code_id = await db.insert(confirmation_codes).values({
-                    user_id: new_user.id,
+                const confirmation_code_id = (await db.insert(confirmation_codes).values({
+                    user_id: new_user_id,
                     confirmation_code: nanoid(52)
-                }).$returningId();
+                }).$returningId())[0].id;
 
-                const confirmation_code = await db.select()
+                const confirmation_code = (await db.select()
                 .from(confirmation_codes)
-                .where(eq(confirmation_codes.id, confirmation_code_id[0].id))
-                .limit(1);
+                .where(eq(confirmation_codes.id, confirmation_code_id))
+                .limit(1))[0];
 
                 await sendConfirmationEmail(req.body.email, confirmation_code.confirmation_code);
 

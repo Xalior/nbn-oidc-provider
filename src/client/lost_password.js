@@ -44,13 +44,13 @@ export default (app) => {
 
                 const conf_form = matchedData(req, { includeOptionals: true });
 
-                const existing_user = await db.select()
+                const existing_user = (await db.select()
                     .from(users)
                     .where(and(
                         eq(users.email, conf_form.email),
                         eq(users.verified, 1),
                     ))
-                    .limit(1);
+                    .limit(1))[0];
 
                 if (existing_user) {
                     const [confirmation_code] = await db.insert(confirmation_codes).values({

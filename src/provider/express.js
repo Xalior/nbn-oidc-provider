@@ -133,6 +133,8 @@ export default (app, provider) => {
 
             console.log("Login Attempt Session: ", req.session);
 
+            console.log("FOR ACCOUNT", account);
+
             req.session.mfa_account_id = account.accountId;
             req.session.mfa_pin = "123456";
 
@@ -171,7 +173,6 @@ export default (app, provider) => {
             };
 
             await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
-
 
             console.log("MFA Complete: ", req.session);
         } catch (err) {

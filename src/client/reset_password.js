@@ -66,7 +66,7 @@ export default (app) => {
                 const age_limit = new Date(Date.now() - (60*30));
 
                 // Search for a confirmation code that matches the raw query string
-                const confirmation_details = await db.select()
+                const confirmation_details = (await db.select()
                     .from(confirmation_codes)
                     .innerJoin(users, eq(confirmation_codes.user_id, users.id))
                     .where(
@@ -75,7 +75,7 @@ export default (app) => {
                             eq(confirmation_codes.used, false)
                         )
                     )
-                    .limit(1);
+                    .limit(1))[0];
 
                 const reset_form = matchedData(req, { includeOptionals: true });
 

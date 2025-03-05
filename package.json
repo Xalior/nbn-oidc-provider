@@ -39,6 +39,10 @@
     },
     "type": "module",
     "devDependencies": {
+        "@wdio/cli": "^9.10.1",
+        "@wdio/local-runner": "^9.10.1",
+        "@wdio/mocha-framework": "^9.10.1",
+        "@wdio/spec-reporter": "^9.10.1",
         "autoprefixer": "^10.4.20",
         "css-loader": "^7.1.2",
         "drizzle-kit": "^0.30.2",
@@ -47,6 +51,7 @@
         "sass": "^1.83.4",
         "sass-loader": "^16.0.4",
         "style-loader": "^4.0.0",
+        "wdio-wait-for": "^3.1.0",
         "webpack": "^5.97.1",
         "webpack-cli": "^6.0.1",
         "webpack-dev-server": "^5.2.0"
@@ -58,6 +63,7 @@
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit migrate",
         "db:push": "drizzle-kit push",
-        "db:remake": "rm -rf drizzle && rm -rf data/sqlite.db && npm run db:generate && npm run db:push"
+        "db:remake": "rm -rf drizzle && rm -rf data/sqlite.db && npm run db:generate && npm run db:push",
+        "wdio": "wdio run ./wdio.conf.js"
     }
 }

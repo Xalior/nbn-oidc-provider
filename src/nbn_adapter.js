@@ -233,7 +233,9 @@ class NbnAdapter {
         }
 
         if(this.model==='Client') {
-            item = Client.findByClientId(id);
+            console.log("Starting findByClientId");
+            item = await Client.findByClientId(id);
+            console.log("found client:", item);
         }
 
         return item;

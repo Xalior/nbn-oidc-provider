@@ -21,8 +21,29 @@ export const config = {
     // of the config file unless it's absolute.
     //
     specs: [
-        './test/specs/**/*.js'
+        [
+            './test/specs/auth/login.js',
+            './test/specs/auth/logout.js',
+            './test/specs/auth/failures.js',
+            './test/specs/auth/lost_password.js',
+            './test/specs/auth/password_lockout.js',
+            './test/specs/registration/failures.js',
+        ],
     ],
+    suites: {
+        auth: [
+            [
+                './test/specs/auth/login.js',
+                './test/specs/auth/logout.js',
+                './test/specs/auth/bad_login.js',
+                './test/specs/auth/lost_password.js',
+                './test/specs/auth/password_lockout.js'
+            ]
+        ],
+        registration: [
+            './test/specs/registration/failures.js'
+        ]
+    },
     // Patterns to exclude.
     exclude: [
         // 'path/to/excluded/files'

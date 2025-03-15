@@ -25,11 +25,11 @@ export default (app) => {
     async (value,{req, loc, path}) => {
             try {
                 const existing_user = (await db.select()
-                .from(users)
-                .where(eq(users.email, value))
-                .limit(1))[0];
+                    .from(users)
+                    .where(eq(users.email, value))
+                    .limit(1))[0];
 
-                if (existing_user.length) {
+                if (existing_user) {
                     if (!existing_user.verified) {
                         throw new Error("User already exists - have <a href=\"reconfirm\">lost your confirmation link</a>?");
                     }
@@ -107,9 +107,9 @@ export default (app) => {
                 }).$returningId())[0].id;
 
                 const confirmation_code = (await db.select()
-                .from(confirmation_codes)
-                .where(eq(confirmation_codes.id, confirmation_code_id))
-                .limit(1))[0];
+                    .from(confirmation_codes)
+                    .where(eq(confirmation_codes.id, confirmation_code_id))
+                    .limit(1))[0];
 
                 await sendConfirmationEmail(req.body.email, confirmation_code.confirmation_code);
 

@@ -59,9 +59,11 @@ export class Account {
         };
     }
 
-    static async findByLogin(email, password) {
-        if(ADAPTER_DEBUG) console.debug("findByLogin", email);
+    static async findByLogin(req) {
+        const email = req.body.login;
+        const password = req.body.password;
 
+        console.log("ACCOUNT LOGIN ATTEMPT:", email, password);
         const user = (await db.select()
             .from(users)
             .where(and
@@ -73,17 +75,37 @@ export class Account {
             )
             .limit(1))[0];
 
-        console.log(user);
+        console.log("ACCOUNT FOUND:", user);
         // User not found
-        if(!user) return null;
-
-        // Password wrong?
-        if (!bcrypt.compare(password, user.password)) {
-            await db.update(users).set({
-                login_attempts: user.constructor+1,
-            }).where(eq(users.id, user.id));
+        if(!user) {
+            req.flash('error', 'Login failed, try again.<br> Or maybe you <a href="/lost_password">forgot your password</a>?');
 
             return null;
+        }
+
+        // User not found
+        if(user.login_attempts>2) {
+            req.flash('error', 'Account Locked.<br> <a href="/lost_password">Reset your password</a> to continue.');
+
+            return null;
+        }
+
+        // Password wrong?
+        if (!(await bcrypt.compare(password, user.password))) {
+            await db.update(users).set({
+                login_attempts: user.login_attempts+1,
+            }).where(eq(users.id, user.id));
+
+            req.flash('error', 'Login failed, try again.<br> Or maybe you <a href="/lost_password">lost your password</a>?');
+
+            return null;
+        }
+
+        // If the user has failed to login before, reset that to zero now
+        if(user.login_attempts>0) {
+            await db.update(users).set({
+                login_attempts: 0,
+            }).where(eq(users.id, user.id));
         }
 
         return new Account(user.account_id, {

@@ -7,10 +7,27 @@ import {nanoid} from "nanoid";
 import {generateAccountId, hashAccountPassword} from "../models/account.js";
 
 export default (app) => {
-
     app.get('/reset_password', async (req, res, next) => {
         try {
             const query_string = req.url.replace(/^\/reset_password\?/, '');
+
+
+            // Search for a confirmation code that matches the raw query string
+            const confirmation_code = (await db.select()
+                .from(confirmation_codes)
+                .where(
+                    and(
+                        eq(confirmation_codes.confirmation_code, query_string),
+                        eq(confirmation_codes.used, false)
+                    )
+                )
+                .limit(1))[0];
+
+            if(!confirmation_code) {
+                req.flash('error', 'Confirmation code not recognized!');
+
+                return res.redirect(`/`);
+            }
 
             return res.render('reset_password', {
                 query_string: query_string
@@ -62,11 +79,10 @@ export default (app) => {
                     });
                 }
 
-
                 const age_limit = new Date(Date.now() - (60*30));
 
                 // Search for a confirmation code that matches the raw query string
-                const confirmation_details = (await db.select()
+                const confirmation_code = (await db.select()
                     .from(confirmation_codes)
                     .innerJoin(users, eq(confirmation_codes.user_id, users.id))
                     .where(
@@ -77,28 +93,31 @@ export default (app) => {
                     )
                     .limit(1))[0];
 
+                console.log("confirmation_details:", confirmation_code);
+
                 const reset_form = matchedData(req, { includeOptionals: true });
 
                 // If we found it, mark the user as confirmed, and redir to login
-                if(confirmation_details?.users?.email === reset_form.email) {
-                    const [new_user] = await db.update(users).set({
+                if(confirmation_code?.users?.email === reset_form.email) {
+                    await db.update(users).set({
                         password: await hashAccountPassword(reset_form.password_1),
-                    })
-                    .where(eq(confirmation_details.users.id, users.id))
-                    .returning();  //:FIXME - sqlite
+                    }).where(
+                        eq(confirmation_code.users.id, users.id)
+                    );
 
                     await db.update(confirmation_codes).set({
                         used: true,
                     })
                     .where(
                         eq(confirmation_codes.confirmation_code, query_string)
-                    )
-                    .returning();  //:FIXME - sqlite
+                    );
 
-                    console.log("Matching ",confirmation_details, " updated ", new_user);
+                    req.flash('info', 'Password changed successfully.');
+
+                    return res.redirect(`/`);
                 } else {
                     req.body.errors.email = "Please confirm your email address matches your account..."
-                    console.log("Failing ",confirmation_details, " VS ", reset_form);
+                    console.log("Failing ",confirmation_code, " VS ", reset_form);
                 }
 
                 return res.render('reset_password', {

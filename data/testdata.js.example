@@ -1,0 +1,10 @@
+export default {
+    admin: {
+        email: "admin@example.com",
+        password: "Comp1exL0ngPa55word"
+    },
+    newuser: {
+        email: "newuser@example.com",
+        password: "Comp1exL0ngPa55word"
+    },
+};

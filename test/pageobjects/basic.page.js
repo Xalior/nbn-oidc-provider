@@ -1,12 +1,12 @@
 import Page from './page.js';
-import {$} from "@wdio/globals";
+import {$, browser} from "@wdio/globals";
 
 class BasicPage extends Page{
-    /**
-     * define selectors using getter methods
-     */
-    get flashAlert () {
-        return $('#flash');
+    async open (path) {
+        if(!path) {
+            path='/';
+        }
+        return await browser.url(path);
     }
 }
 

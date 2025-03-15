@@ -16,7 +16,6 @@ export default (app) => {
             )
             .limit(1);
 
-            console.log(confirmation_code);
             // If we found it, mark the user as confirmed, and redir to login
             if(confirmation_code.length) {
                 if(confirmation_code[0].used === true) {
@@ -25,13 +24,14 @@ export default (app) => {
                     return req.redirect('/login');
                 }
 
-
                 // Check for expired codes here, and handle accordingly
                 //                     gte(confirmation_codes.created_at, age_limit)
                 // removed from above query, so we can handle error messages instead
+
                 await db.update(users).set({
                     verified: true,
                     confirmed_at: new Date(Date.now()),
+                    login_attempts: 0,
                 }).where(eq(users.id, confirmation_code[0].user_id));
 
                 await db.update(confirmation_codes).set({

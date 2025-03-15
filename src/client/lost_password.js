@@ -44,19 +44,24 @@ export default (app) => {
 
                 const conf_form = matchedData(req, { includeOptionals: true });
 
-                const existing_user = (await db.select()
+                const [existing_user] = (await db.select()
                     .from(users)
                     .where(and(
                         eq(users.email, conf_form.email),
                         eq(users.verified, 1),
                     ))
-                    .limit(1))[0];
+                    .limit(1));
 
                 if (existing_user) {
-                    const [confirmation_code] = await db.insert(confirmation_codes).values({
+                    const confirmation_code_id = (await db.insert(confirmation_codes).values({
                         user_id: existing_user.id,
                         confirmation_code: nanoid(52)
-                    }).returning();  //:FIXME - sqlite
+                    }).$returningId())[0].id;
+
+                    const [confirmation_code] = (await db.select()
+                        .from(confirmation_codes)
+                        .where(eq(confirmation_codes.id, confirmation_code_id))
+                        .limit(1));
 
                     await sendPasswordResetEmail(existing_user.email, confirmation_code.confirmation_code);
                 }

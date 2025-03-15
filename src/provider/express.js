@@ -123,11 +123,9 @@ export default (app, provider) => {
 
             assert.equal(details.prompt['name'], 'login');
 
-            const account = await Account.findByLogin(req.body.login, req.body.password);
+            const account = await Account.findByLogin(req);
 
             if(!account) {
-                req.flash('error', 'Login failed, try again.<br> Or maybe you <a href="/lost_password">lost your password</a>?');
-
                 return res.redirect(`/interaction/${details.jti}`);
             }
 

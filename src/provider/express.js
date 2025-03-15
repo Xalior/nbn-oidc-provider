@@ -8,6 +8,7 @@ import { urlencoded } from 'express';
 
 import { Account } from '../models/account.js';
 import { errors } from 'oidc-provider';
+import {sendLoginPinEmail} from "../lib/email.js";
 
 const body = urlencoded({ extended: false });
 
@@ -129,12 +130,10 @@ export default (app, provider) => {
                 return res.redirect(`/interaction/${details.jti}`);
             }
 
-            console.log("Login Attempt Session: ", req.session);
-
-            console.log("FOR ACCOUNT", account);
-
             req.session.mfa_account_id = account.accountId;
-            req.session.mfa_pin = "123456";
+            req.session.mfa_pin = '000000'+Math.floor(Math.random() * 1000000).slice(-6);
+
+            await sendLoginPinEmail(req.body.login, req.session.mfa_pin);
 
             return res.redirect(`/interaction/${details.jti}/mfa`);
 

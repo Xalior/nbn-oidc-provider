@@ -3,3 +3,4 @@ node_modules
 .idea
 data/sqlite.db
 log/*
+data/testdata.js

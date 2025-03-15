@@ -135,19 +135,16 @@ export default (app, provider) => {
 
             await sendLoginPinEmail(req.body.login, req.session.mfa_pin);
 
-            return res.redirect(`/interaction/${details.jti}/mfa`);
+            return res.render('mfa');
 
         } catch (err) {
             next(err);
         }
     });
 
-    app.get('/interaction/:uid/mfa', setNoCache, body, async (req, res, next) => {
+    app.post('/interaction/:uid/mfa', setNoCache, body, async (req, res, next) => {
         try {
             const details = await provider.interactionDetails(req, res);
-
-            console.log("MFA Session: ", req.session);
-            console.log("MFA Details: ", details);
 
             const account = await Account.findAccount(null, req.session.mfa_account_id);
 
@@ -159,6 +156,12 @@ export default (app, provider) => {
 
             console.log("MFA Account: ", account);
 
+            // ::TODO:: the whole 'confirm PIN' dance
+            if(false) {
+                req.flash('error', 'Wrong Passcode!');
+
+                return res.render('mfa');
+            }
 
             delete(req.session.mfa_account_id);
             delete(req.session.mfa_pin);
@@ -169,13 +172,13 @@ export default (app, provider) => {
                 },
             };
 
-            await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
-
             console.log("MFA Complete: ", req.session);
+            await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
         } catch (err) {
             next(err);
         }
     });
+
 
     // app.post('/interaction/:uid/confirm', setNoCache, body, async (req, res, next) => {
     //     try {

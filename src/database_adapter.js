@@ -1,21 +1,28 @@
-import QuickLRU from 'quick-lru';
 import {Client} from './models/clients.js';
+import Redis from 'ioredis';
 import config from "../data/config.js";
 
+const cache = new Redis(config.cache_url);
 import epochTime from 'oidc-provider/lib/helpers/epoch_time.js';
 
-let storage = new QuickLRU({ maxSize: 1000 });
-
 function grantKeyFor(id) {
-    return `grant:${id}`;
+    return `${config.slug}:grant:${id}`;
 }
 
 function sessionUidKeyFor(id) {
-    return `sessionUid:${id}`;
+    return `${config.slug}:sessionUid:${id}`;
 }
 
 function userCodeKeyFor(userCode) {
-    return `userCode:${userCode}`;
+    return `${config.slug}:userCode:${userCode}`;
+}
+
+function mfaCodeKeyFor(mfaCode) {
+    return `${config.slug}:mfaCode:${mfaCode}`;
+}
+
+function confCodeKeyFor(confCode) {
+    return `${config.slug}:confCode:${confCode}`;
 }
 
 const grantable = new Set([
@@ -26,27 +33,55 @@ const grantable = new Set([
     'BackchannelAuthenticationRequest',
 ]);
 
-
 const DEBUG_ADAPTER = true;
 
-class NbnAdapter {
+const storable = new Set([
+    // oidc-provider
+    "Grant",
+    "Session",
+    "AccessToken",
+    "AuthorizationCode",
+    "RefreshToken",
+    "ClientCredentials",
+    "Client",                               // Provided by MySQL
+    "InitialAccessToken",
+    "RegistrationAccessToken",
+    "DeviceCode",
+    "Interaction",
+    "ReplayDetection",
+    "PushedAuthorizationRequest",
+    "BackchannelAuthenticationRequest",
+    // oidc-controller
+    "MFACode",
+    "ConfirmationCode"
+])
+
+class DatabaseAdapter {
     /**
      *
-     * Creates an instance of MyAdapter for an oidc-provider model.
+     * Creates an instance of DatabaseAdapter for the all database access.
      *
      * @constructor
-     * @param {string} name Name of the oidc-provider model. One of "Grant, "Session", "AccessToken",
-     * "AuthorizationCode", "RefreshToken", "ClientCredentials", "Client", "InitialAccessToken",
-     * "RegistrationAccessToken", "DeviceCode", "Interaction", "ReplayDetection",
-     * "BackchannelAuthenticationRequest", or "PushedAuthorizationRequest"
+     * @param {string} name Name of the  model.
+     *
+     * One of "Grant", "Session", "AccessToken", "AuthorizationCode",
+     * "RefreshToken", "ClientCredentials", "Client", "InitialAccessToken",
+     * "RegistrationAccessToken", "DeviceCode", "Interaction",
+     * "ReplayDetection", "BackchannelAuthenticationRequest", or
+     * "PushedAuthorizationRequest" -- all as per the oidc-provider requirements
+     * Or:
+     * "MFACode", or "ConfirmationCode" -- as part of the NBN oidc-controller
      *
      */
     constructor(name) {
+        if(!storable.has(name)) {
+            throw new Error(`Storable name "${name}" not found.`);
+        }
         this.model = name;
     }
 
     key(id) {
-        return `${this.model}:${id}`;
+        return `${config.slug}:${this.model}:${id}`;
     }
     /**
      *
@@ -61,8 +96,6 @@ class NbnAdapter {
      *
      */
     async upsert(id, payload, expiresIn) {
-        if(DEBUG_ADAPTER) console.debug('adapter upsert', this.key(id), payload);
-
         /**
          *
          * When this is one of AccessToken, AuthorizationCode, RefreshToken, ClientCredentials,
@@ -186,29 +219,42 @@ class NbnAdapter {
          * - exp {number} - timestamp of the replay object cache expiration
          * - iat {number} - timestamp of the replay object cache's creation
          */
+        if(DEBUG_ADAPTER) console.debug('adapter upsert', this.key(id), payload);
+
         const key = this.key(id);
 
-        if (this.model === 'Session') {
-            storage.set(sessionUidKeyFor(payload.uid), id, expiresIn * 1000);
+        const multi = cache.multi();
+
+        multi.call('JSON.SET', key, '.', JSON.stringify(payload));
+
+        if (expiresIn) {
+            multi.expire(key, expiresIn);
         }
 
-        const { grantId, userCode } = payload;
-        if (grantable.has(this.model) && grantId) {
-            const grantKey = grantKeyFor(grantId);
-            const grant = storage.get(grantKey);
-            if (!grant) {
-                storage.set(grantKey, [key]);
-            } else {
-                grant.push(key);
+        if (grantable.has(this.name) && payload.grantId) {
+            const grantKey = grantKeyFor(payload.grantId);
+            multi.rpush(grantKey, key);
+            // if you're seeing grant key lists growing out of acceptable proportions consider using LTRIM
+            // here to trim the list to an appropriate length
+            const ttl = await cache.ttl(grantKey);
+            if (expiresIn > ttl) {
+                multi.expire(grantKey, expiresIn);
             }
         }
 
-        if (userCode) {
-            storage.set(userCodeKeyFor(userCode), id, expiresIn * 1000);
+        if (payload.userCode) {
+            const userCodeKey = userCodeKeyFor(payload.userCode);
+            multi.set(userCodeKey, id);
+            multi.expire(userCodeKey, expiresIn);
         }
 
-        storage.set(key, payload, expiresIn * 1000);
-        console.info("STORE:", storage)
+        if (payload.uid) {
+            const uidKey = sessionUidKeyFor(payload.uid);
+            multi.set(uidKey, id);
+            multi.expire(uidKey, expiresIn);
+        }
+
+        await multi.exec();
     }
 
     /**
@@ -222,23 +268,18 @@ class NbnAdapter {
      *
      */
     async find(id) {
-        let item = storage.get(this.key(id));
-
-        if(DEBUG_ADAPTER) {
-            if (item) {
-                console.debug('adapter find', this.key(id), 'on', this.model, 'found', item);
-            } else {
-                console.debug('adapter find', this.key(id), 'on', this.model, ' found NOTHING');
-            }
-        }
+        let item = undefined;
 
         if(this.model==='Client') {
-            console.log("Starting findByClientId");
             item = await Client.findByClientId(id);
-            console.log("found client:", item);
+            return item;
         }
 
-        return item;
+        const key = this.key(id);
+        item = await cache.call('JSON.GET', key);
+        if (!item) return undefined;
+
+        return JSON.parse(item);
     }
 
     /**
@@ -253,8 +294,7 @@ class NbnAdapter {
      *
      */
     async findByUserCode(userCode) {
-        if(DEBUG_ADAPTER) console.debug('adapter findByUserCode', userCode, 'on', this.model);
-        const id = storage.get(userCodeKeyFor(userCode));
+        const id = await cache.get(userCodeKeyFor(userCode));
         return this.find(id);
 
     }
@@ -270,8 +310,7 @@ class NbnAdapter {
      *
      */
     async findByUid(uid) {
-        if(DEBUG_ADAPTER) console.debug('adapter find(session)ByUid', uid, 'on', this.model);
-        const id = storage.get(sessionUidKeyFor(uid));
+        const id = await cache.get(sessionUidKeyFor(uid));
         return this.find(id);
 
     }
@@ -288,8 +327,7 @@ class NbnAdapter {
      *
      */
     async consume(id) {
-        if(DEBUG_ADAPTER) console.debug('adapter consume', this.key(id), 'on', this.model);
-        storage.get(this.key(id)).consumed = epochTime();
+        await cache.call('JSON.SET', this.key(id), 'consumed', Math.floor(Date.now() / 1000));
     }
 
     /**
@@ -303,9 +341,8 @@ class NbnAdapter {
      *
      */
     async destroy(id) {
-        if(DEBUG_ADAPTER) console.debug('adapter DESTROY', this.key(id), 'on', this.model);
         const key = this.key(id);
-        storage.delete(key);
+        await cache.del(key);
     }
 
     /**
@@ -319,14 +356,12 @@ class NbnAdapter {
      *
      */
     async revokeByGrantId(grantId) {
-        if(DEBUG_ADAPTER) console.debug('adapter revokeByGrantId', grantId, 'on', this.model);
-        const grantKey = grantKeyFor(grantId);
-        const grant = storage.get(grantKey);
-        if (grant) {
-            grant.forEach((token) => storage.delete(token));
-            storage.delete(grantKey);
-        }
+        const multi = cache.multi();
+        const tokens = await cache.lrange(grantKeyFor(grantId), 0, -1);
+        tokens.forEach((token) => multi.del(token));
+        multi.del(grantKeyFor(grantId));
+        await multi.exec();
     }
 }
 
-export default NbnAdapter;
+export default DatabaseAdapter;

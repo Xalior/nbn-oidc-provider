@@ -22,7 +22,7 @@ export const sendConfirmationEmail = async (email, confirmation_code) => {
   console.log("Message sent: %s", info);
 }
 
-export const sendLoginPinEmail = async (email, pin_code) => {
+export const sendLoginPinEmail = async (req, email, pin_code, request_time) => {
   // send mail with defined transport object
   const info = await transporter.sendMail({
     from: '"NBN:ID" <noreply@nextbestnetwork.com>', // sender address
@@ -37,8 +37,9 @@ export const sendLoginPinEmail = async (email, pin_code) => {
     If you did not log in, then someone could have your password!
     You should log in, immediately, and change your password to something new - and unique.
     
-    Please visit ${config.provider_url}lost_password to reset your account`, // plain text body
-
+    Please visit ${config.provider_url}lost_password to reset your password.
+    
+    This login attempt came from ${req} at ${request_time}.`, // plain text body
     html: `<b>NBN:ID Login PIN<a><br>
   <br>
     You attempted to log into NBN:ID - and that required this time sensitive passcode.
@@ -49,7 +50,9 @@ export const sendLoginPinEmail = async (email, pin_code) => {
     You should log in, immediately, and change your password to something new - and unique.
   <br>
   Please visit <a href="${config.provider_url}lost_password">
-    ${config.provider_url}lost_password</a> to reset your password`,
+    ${config.provider_url}lost_password</a> to reset your password.
+    
+    This login attempt came from ${req} at ${request_time}.`, // plain text body,
   });
 
   console.log("Message sent: %s", info);

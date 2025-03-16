@@ -6,6 +6,8 @@ import { inspect } from 'node:util';
 import isEmpty from 'lodash/isEmpty.js';
 import { urlencoded } from 'express';
 
+import DatabaseAdapter from "../database_adapter.js";
+
 import { Account } from '../models/account.js';
 import { errors } from 'oidc-provider';
 import {sendLoginPinEmail} from "../lib/email.js";
@@ -29,6 +31,8 @@ const setNoCache = (req, res, next) => {
     res.set('cache-control', 'no-store');
     next();
 }
+
+const mfaCode = new DatabaseAdapter("MFACode");
 
 export default (app, provider) => {
     app.get('/interaction/:uid', setNoCache, async (req, res, next) => {
@@ -124,16 +128,23 @@ export default (app, provider) => {
 
             assert.equal(details.prompt['name'], 'login');
 
+            console.log("LOGIN DETAILS: ", details);
+
             const account = await Account.findByLogin(req);
 
             if(!account) {
                 return res.redirect(`/interaction/${details.jti}`);
             }
 
-            req.session.mfa_account_id = account.accountId;
-            req.session.mfa_pin = ('000000'+Math.floor(Math.random() * 1000000)).slice(-6);
+            const mfa_pin = ('000000'+Math.floor(Math.random() * 1000000)).slice(-6);
+            const request_time = new Date().toJSON();
+            await mfaCode.upsert(details.jti, {
+                pin: mfa_pin,
+                accountId: account.accountId,
+                requestTime: request_time
+            },15*60);
 
-            await sendLoginPinEmail(req.body.login, req.session.mfa_pin);
+            await sendLoginPinEmail(req, req.body.login, mfa_pin, request_time);
 
             return res.render('mfa', {
                 'uid': req.param("uid")
@@ -148,7 +159,11 @@ export default (app, provider) => {
         try {
             const details = await provider.interactionDetails(req, res);
 
-            const account = await Account.findAccount(null, req.session.mfa_account_id);
+            assert.equal(details.prompt['name'], 'login');
+
+            const mfa_code = await mfaCode.find(details.jti);
+
+            const account = await Account.findAccount(null, mfa_code?.accountId);
 
             if(!account) {
                 req.flash('error', 'Unexpected MFA association!');
@@ -160,13 +175,13 @@ export default (app, provider) => {
 
             // ::TODO:: the whole 'confirm PIN' dance
             if(false) {
+
                 req.flash('error', 'Wrong Passcode!');
 
                 return res.render('mfa');
             }
 
-            delete(req.session.mfa_account_id);
-            delete(req.session.mfa_pin);
+            mfaCode.destroy(account.accountId);
 
             const result = {
                 login: {

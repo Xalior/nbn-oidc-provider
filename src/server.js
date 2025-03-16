@@ -167,7 +167,7 @@ let claims = [];
 try {
     // Initialize database adapter if MongoDB URI is provided
     let adapter;
-    ({ default: adapter } = await import('./nbn_adapter.js'));
+    ({ default: adapter } = await import('./database_adapter.js'));
 
     // Set up the OIDC Provider
     const provider = new Provider(config.provider_url, { adapter, ...config });

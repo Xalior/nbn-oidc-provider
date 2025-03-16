@@ -131,11 +131,13 @@ export default (app, provider) => {
             }
 
             req.session.mfa_account_id = account.accountId;
-            req.session.mfa_pin = '000000'+Math.floor(Math.random() * 1000000).slice(-6);
+            req.session.mfa_pin = ('000000'+Math.floor(Math.random() * 1000000)).slice(-6);
 
             await sendLoginPinEmail(req.body.login, req.session.mfa_pin);
 
-            return res.render('mfa');
+            return res.render('mfa', {
+                'uid': req.param("uid")
+            });
 
         } catch (err) {
             next(err);

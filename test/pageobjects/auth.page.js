@@ -37,6 +37,10 @@ class AuthPage extends Page {
         return $('#login_password_confirm');
     }
 
+    get inputLoginMFA () {
+        return $('#login_mfa');
+    }
+
     get btnSubmit () {
         return $('button[type="submit"]');
     }
@@ -72,6 +76,10 @@ class AuthPage extends Page {
         await this.btnSubmit.click();
     }
 
+    async confirm_login (pin) {
+        await this.inputLoginMFA.setValue(pin);
+        await this.btnSubmit.click();
+    }
     /**
      * overwrite specific options to adapt it to page object
      */

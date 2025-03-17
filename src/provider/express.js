@@ -218,6 +218,13 @@ export default (app, provider) => {
                 },
             };
 
+            // Successful login == reset login_attempts
+            if(account.profile.user.login_attempts>0) {
+                await db.update(users).set({
+                    login_attempts: account.profile.user.login_attempts + 1,
+                }).where(eq(users.id, account.profile.user.id));
+            }
+
             console.log("MFA Complete: ", req.session);
             await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
         } catch (err) {

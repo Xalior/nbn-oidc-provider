@@ -11,6 +11,10 @@ import DatabaseAdapter from "../database_adapter.js";
 import { Account } from '../models/account.js';
 import { errors } from 'oidc-provider';
 import {sendLoginPinEmail} from "../lib/email.js";
+import {check, matchedData} from "express-validator";
+import {db} from "../db/index.js";
+import {users} from "../db/schema.js";
+import {eq} from "drizzle-orm";
 
 const body = urlencoded({ extended: false });
 
@@ -128,8 +132,6 @@ export default (app, provider) => {
 
             assert.equal(details.prompt['name'], 'login');
 
-            console.log("LOGIN DETAILS: ", details);
-
             const account = await Account.findByLogin(req);
 
             if(!account) {
@@ -138,7 +140,7 @@ export default (app, provider) => {
 
             const mfa_pin = ('000000'+Math.floor(Math.random() * 1000000)).slice(-6);
             const request_time = new Date().toJSON();
-            await mfaCode.upsert(details.jti, {
+            await mfaCode.upsert(req.param("uid"), {
                 pin: mfa_pin,
                 accountId: account.accountId,
                 requestTime: request_time
@@ -147,7 +149,7 @@ export default (app, provider) => {
             await sendLoginPinEmail(req, req.body.login, mfa_pin, request_time);
 
             return res.render('mfa', {
-                'uid': req.param("uid")
+                'uid': req.param("uid"),
             });
 
         } catch (err) {
@@ -155,30 +157,57 @@ export default (app, provider) => {
         }
     });
 
-    app.post('/interaction/:uid/mfa', setNoCache, body, async (req, res, next) => {
+    app.post('/interaction/:uid/mfa', setNoCache, body,
+        // Validation
+        check('mfa').trim().notEmpty().isNumeric().isLength({
+            min: 6,
+            max: 6,
+        }).withMessage('Invalid MFA PIN.'),
+
+        // Actual Page Handler
+        async (req, res, next) => {
         try {
             const details = await provider.interactionDetails(req, res);
 
             assert.equal(details.prompt['name'], 'login');
 
-            const mfa_code = await mfaCode.find(details.jti);
+            const mfa_form = matchedData(req, { includeOptionals: true });
+
+            const mfa_code = await mfaCode.find(req.param("uid"));
 
             const account = await Account.findAccount(null, mfa_code?.accountId);
 
             if(!account) {
+                await db.update(users).set({
+                    login_attempts: account.profile.user.login_attempts+1,
+                }).where(eq(users.id, account.profile.user.id));
+
                 req.flash('error', 'Unexpected MFA association!');
 
                 return res.redirect(`/interaction/${details.jti}`);
             }
 
-            console.log("MFA Account: ", account);
+            console.log("Form, MFA & Account: ", mfa_form, mfa_code, account);
+
+            // User Locked
+            if(account.profile.user.login_attempts>2) {
+                req.flash('error', 'Account Locked.<br> <a href="/lost_password">Reset your password</a> to continue.');
+
+                return res.redirect(`/interaction/${details.jti}`);
+            }
 
             // ::TODO:: the whole 'confirm PIN' dance
-            if(false) {
+            if(mfa_form.mfa != mfa_code.pin) {
+                await db.update(users).set({
+                    login_attempts: account.profile.user.login_attempts+1,
+                }).where(eq(users.id, account.profile.user.id));
 
-                req.flash('error', 'Wrong Passcode!');
+                req.flash('error', 'Invalid Passcode!');
 
-                return res.render('mfa');
+                return res.render('mfa', {
+                    'uid': req.param("uid"),
+                });
+
             }
 
             mfaCode.destroy(account.accountId);

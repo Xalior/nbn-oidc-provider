@@ -59,7 +59,6 @@ export class Account {
         const email = req.body.login;
         const password = req.body.password;
 
-        console.log("ACCOUNT LOGIN ATTEMPT:", email, password);
         const user = (await db.select()
             .from(users)
             .where(and
@@ -71,7 +70,6 @@ export class Account {
             )
             .limit(1))[0];
 
-        console.log("ACCOUNT FOUND:", user);
         // User not found
         if(!user) {
             req.flash('error', 'Login failed, try again.<br> Or maybe you <a href="/lost_password">forgot your password</a>?');
@@ -106,11 +104,8 @@ export class Account {
 
         return new Account(user.account_id, {
             email: user.email,
-            email_verified: user.email_verified,
-            family_name: user.family_name,
-            given_name: user.given_name,
-            locale: user.locale,
-            name: user.name,
+            display_name: user.display_name,
+            user: user,
         });
     }
 
@@ -130,11 +125,8 @@ export class Account {
 
         return new Account(user.account_id, {
             email: user.email,
-            email_verified: user.email_verified,
-            family_name: user.family_name,
-            given_name: user.given_name,
-            locale: user.locale,
-            name: user.name,
+            display_name: user.display_name,
+            user: user,
         });
     }
 }

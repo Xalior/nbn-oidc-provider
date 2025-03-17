@@ -37,8 +37,11 @@ describe('Authentication:Login', () => {
         const interaction_url = await browser.getUrl();
         console.log(":interaction_url:", interaction_url);
 
-        const interaction_regex = /https:\/\/[a-zA-Z0-9.-]+\/interaction\/([a-zA-Z0-9.-]+)\/login/
-        const interaction_id = interaction_regex.exec(interaction_url)[1];
+        const interaction_regex = /https:\/\/[a-zA-Z0-9.-]+\/interaction\/([a-zA-Z0-9\-._]+)\/login/
+        const interaction_matches = interaction_regex.exec(interaction_url);
+        console.log(":interaction_matches:", interaction_matches);
+
+        const interaction_id = interaction_matches[1];
         console.log(":interaction_id:", interaction_id);
 
         const mfa_pin = await mfa_cache.find(interaction_id);

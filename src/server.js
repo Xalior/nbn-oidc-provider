@@ -13,7 +13,7 @@ import { Account } from './models/account.js';
 import config from '../data/config.js';
 import * as log from './lib/log.js';
 import provider_routes from './provider/express.js';
-import client_routes from './client/routes.js';
+import client_routes from './controller/routes.js';
 import morgan from 'morgan';
 import bodyParser from "body-parser";
 import slugify from "slugify";

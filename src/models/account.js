@@ -21,8 +21,6 @@ export const hashAccountPassword = async (password)=>{
     }
 }
 
-const ADAPTER_DEBUG = true;
-
 export class Account {
     constructor(id, profile) {
         if(id) {
@@ -41,8 +39,6 @@ export class Account {
      *   or not return them in id tokens but only userinfo and so on.
      */
     async claims(use, scope) { // eslint-disable-line no-unused-vars
-        if(ADAPTER_DEBUG) console.debug(`claims {\n\tuse:${use},\n\tscope:${scope}\n\tthis:`,this,`\n}`);
-
         const user = (await db.select()
             .from(users)
             .where(eq(users.account_id, this.accountId))
@@ -119,7 +115,6 @@ export class Account {
     }
 
     static async findAccount(ctx, id, token) { // eslint-disable-line no-unused-vars
-        if(ADAPTER_DEBUG) console.debug("findAccount", id, "token=",token);
         // token is a reference to the token used for which a given account is being loaded,
         //   it is undefined in scenarios where account claims are returned from authorization endpoint
         // ctx is the http request context

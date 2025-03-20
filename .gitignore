@@ -4,3 +4,4 @@ node_modules
 data/sqlite.db
 log/*
 data/testdata.js
+.DS_Store

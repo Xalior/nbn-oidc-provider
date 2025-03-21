@@ -73,20 +73,23 @@ app.engine('mustache', mustacheExpress());
 app.set('view engine', 'mustache');
 app.set('views', path.join(__dirname, 'views'));
 
-const hide_headers = ['login'];
+const hide_headers = ['login', 'mfa', 'register'];
 
 app.use((req, res, next) => {
     const orig = res.render;
 
     //  Before we dispatch to our renderer, inject our constant requirements
     res.render = (view, locals) => {
+
+        console.log("VIEW: ", view, hide_headers.includes(view));
+
         locals = { ...locals,
             errors: req.flash('error'),
             infos:  req.flash('info'),
             warnings: req.flash('warning'),
             successes: req.flash('success'),
             user: req.user,
-            hide_headers: hide_headers.includes(view)
+            hide_header: hide_headers.includes(view)
         }
 
         app.render(view, locals, (err, html) => {

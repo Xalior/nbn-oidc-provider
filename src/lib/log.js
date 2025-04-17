@@ -3,7 +3,6 @@ import * as RotatingFileStream from "rotating-file-stream";
 const pad = num => (num > 9 ? "" : "0") + num;
 
 const filename_generator = (time, index) => {
-    console.log("time",time,"index",index);
     if (!time) return "log/nbn-oidc-provider.log";
 
     const month = time.getFullYear() + "" + pad(time.getMonth() + 1);

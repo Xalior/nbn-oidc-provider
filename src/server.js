@@ -241,6 +241,7 @@ try {
 
             const me = await openidClient.fetchUserInfo(issuer, tokens.access_token, this_claim.sub);
             console.log("openidClient.fetchUserInfo: ", me);
+
             // At this point, if we want local profile data - we should create it here, if it does not already exist
             claims[this_claim.sub] = {
                 access_token: tokens.access_token,

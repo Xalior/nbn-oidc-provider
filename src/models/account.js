@@ -47,11 +47,9 @@ export class Account {
         return {
             sub: this.accountId,
             email: user.email,
-            email_verified: user.email_verified,
-            family_name: user.family_name,
-            given_name: user.given_name,
-            locale: user.locale,
-            name: user.name,
+            verified: user.verified,
+            suspended: user.suspended,
+            display_name: user.display_name,
         };
     }
 

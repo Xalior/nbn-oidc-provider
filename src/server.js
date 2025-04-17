@@ -79,13 +79,22 @@ app.use((req, res, next) => {
     const orig = res.render;
 
     //  Before we dispatch to our renderer, inject our constant requirements
-    res.render = (view, locals) => {
+    res.render = async (view, locals) => {
 
         console.log("VIEW: ", view, hide_headers.includes(view));
+        if(req.user) {
+            console.log(req.user);
 
-        locals = { ...locals,
+            const account = (await Account.findAccount(req, req.user.sub));
+            console.log("Account:",account);
+            req.user = account.profile['user'];
+        }
+
+
+        locals = {
+            ...locals,
             errors: req.flash('error'),
-            infos:  req.flash('info'),
+            infos: req.flash('info'),
             warnings: req.flash('warning'),
             successes: req.flash('success'),
             user: req.user,
@@ -225,14 +234,14 @@ try {
 
     passport.use(new Strategy({
         'config': issuer,
-        'scope': 'openid email userinfo offline_access',
+        'scope': 'openid email',
         'callbackURL': `${provider_url}callback`
     }, async (tokens, verified) => {
             const this_claim = tokens.claims();
 
             const me = await openidClient.fetchUserInfo(issuer, tokens.access_token, this_claim.sub);
-            console.log("openidClient.fetchUserInfo", me);
-
+            console.log("openidClient.fetchUserInfo: ", me);
+            // At this point, if we want local profile data - we should create it here, if it does not already exist
             claims[this_claim.sub] = {
                 access_token: tokens.access_token,
                 id_token: tokens.id_token,

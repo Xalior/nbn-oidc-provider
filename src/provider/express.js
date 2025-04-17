@@ -65,7 +65,7 @@ export default (app, provider) => {
                 scopes,
             }));
 
-            const rar = prompt.details.rar || [];
+            // const rar = prompt.details.rar || [];
             // const processedRar = rar.map(({ type, ...detail }) => ({
             //     jsonString: JSON.stringify({ type, ...detail }, null, 4),
             // }));
@@ -196,8 +196,7 @@ export default (app, provider) => {
                 return res.redirect(`/interaction/${details.jti}`);
             }
 
-            // ::TODO:: the whole 'confirm PIN' dance
-            if(mfa_form.mfa != mfa_code.pin) {
+            if(mfa_form.mfa !== mfa_code.pin) {
                 await db.update(users).set({
                     login_attempts: account.profile.user.login_attempts+1,
                 }).where(eq(users.id, account.profile.user.id));

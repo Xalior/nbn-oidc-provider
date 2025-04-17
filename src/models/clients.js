@@ -15,13 +15,10 @@ export class Client {
     }
 
     static async findByClientId(client_id) {
-        console.log('client_id', client_id);
         const client = await db.select()
             .from(clients)
             .where(eq(clients.client_id, client_id))
             .limit(1);
-
-        console.log("client:", client);
 
         // OIDC Client site not found
         if(!client.length) return null;

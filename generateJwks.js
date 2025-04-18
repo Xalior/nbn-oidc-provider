@@ -67,16 +67,17 @@ function generateKeys() {
 }
 
 // Function to convert PEM to JWK and match the exact structure
-async function convertKeysToJwk() {
+async function convertKeysToJwk(includePrivate = true) {
   try {
     const keystore = jose.JWK.createKeyStore();
 
     // Read and convert RSA private key to JWK
     const rsaKeyPem = fs.readFileSync(RSA_PRIVATE_KEY_PATH, "utf8");
     const rsaKey = await keystore.add(rsaKeyPem, "pem");
-    const rsaJwk = rsaKey.toJSON(true); // Include private key
+    const rsaJwk = rsaKey.toJSON(includePrivate); // Include private key if requested
 
-    const orderedRsaJwk = {
+    // Create ordered JWK with or without private components
+    const orderedRsaJwk = includePrivate ? {
       d: rsaJwk.d,
       dp: rsaJwk.dp,
       dq: rsaJwk.dq,
@@ -87,16 +88,28 @@ async function convertKeysToJwk() {
       q: rsaJwk.q,
       qi: rsaJwk.qi,
       use: "sig",
+    } : {
+      e: rsaJwk.e,
+      kty: rsaJwk.kty,
+      n: rsaJwk.n,
+      use: "sig",
     };
 
     // Read and convert EC private key to JWK
     const ecKeyPem = fs.readFileSync(EC_PRIVATE_KEY_PATH, "utf8");
     const ecKey = await keystore.add(ecKeyPem, "pem");
-    const ecJwk = ecKey.toJSON(true); // Include private key
+    const ecJwk = ecKey.toJSON(includePrivate); // Include private key if requested
 
-    const orderedEcJwk = {
+    // Create ordered JWK with or without private components
+    const orderedEcJwk = includePrivate ? {
       crv: ecJwk.crv,
       d: ecJwk.d,
+      kty: ecJwk.kty,
+      use: "sig",
+      x: ecJwk.x,
+      y: ecJwk.y,
+    } : {
+      crv: ecJwk.crv,
       kty: ecJwk.kty,
       use: "sig",
       x: ecJwk.x,
@@ -110,9 +123,27 @@ async function convertKeysToJwk() {
   }
 }
 
+// Function to set secure file permissions
+function setSecurePermissions(filePath) {
+  try {
+    // 0600 = read/write for owner only
+    fs.chmodSync(filePath, 0o600);
+    console.log(`Secure permissions set for ${filePath}`);
+  } catch (err) {
+    console.error(`Error setting permissions for ${filePath}:`, err.message);
+  }
+}
+
 // Main function to execute the script
 async function main() {
   const forceOverwrite = process.argv.includes("-f");
+  const skipPublic = process.argv.includes("--no-public");
+
+  // Create output directory if it doesn't exist
+  if (!fs.existsSync(OUTPUT_DIR)) {
+    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+    console.log(`Created directory: ${OUTPUT_DIR}`);
+  }
 
   // Check if files already exist and handle overwrite logic
   await checkExistingFiles(forceOverwrite);
@@ -120,22 +151,44 @@ async function main() {
   // Step 1: Generate key pairs using OpenSSL
   generateKeys();
 
-  // Step 2: Convert the generated keys into JWK format
-  const jwkKeys = await convertKeysToJwk();
+  // Set secure permissions for the private key files
+  setSecurePermissions(RSA_PRIVATE_KEY_PATH);
+  setSecurePermissions(EC_PRIVATE_KEY_PATH);
 
-  // Step 3: Construct the final JWKS object matching the exact format
-  const jwks = {
-    keys: jwkKeys,
+  // Step 2: Convert the generated keys into JWK format (with private components)
+  const privateJwkKeys = await convertKeysToJwk(true);
+
+  // Step 3: Construct the final private JWKS object
+  const privateJwks = {
+    keys: privateJwkKeys,
   };
 
-  // Step 4: Write the JWKS object to a file
-  const JWKS_OUTPUT_PATH = path.join(OUTPUT_DIR, "jwks.json");
-  fs.writeFileSync(JWKS_OUTPUT_PATH, JSON.stringify(jwks, null, 2));
-  console.log("JWKS successfully created at:", JWKS_OUTPUT_PATH);
+  // Step 4: Write the private JWKS object to a file
+  const PRIVATE_JWKS_PATH = path.join(OUTPUT_DIR, "jwks.json");
+  fs.writeFileSync(PRIVATE_JWKS_PATH, JSON.stringify(privateJwks, null, 2));
+  setSecurePermissions(PRIVATE_JWKS_PATH);
+  console.log("Private JWKS successfully created at:", PRIVATE_JWKS_PATH);
 
-  // Print final JWKS to console
-  console.log("Generated JWKS:");
-  console.log(JSON.stringify(jwks, null, 2));
+  // Step 5: Generate public JWKS (without private components) for distribution
+  if (!skipPublic) {
+    const publicJwkKeys = await convertKeysToJwk(false);
+    const publicJwks = {
+      keys: publicJwkKeys,
+    };
+
+    const PUBLIC_JWKS_PATH = path.join(OUTPUT_DIR, "jwks.public.json");
+    fs.writeFileSync(PUBLIC_JWKS_PATH, JSON.stringify(publicJwks, null, 2));
+    console.log("Public JWKS successfully created at:", PUBLIC_JWKS_PATH);
+
+    // It's safe to print the public JWKS to console
+    console.log("Generated Public JWKS:");
+    console.log(JSON.stringify(publicJwks, null, 2));
+  } else {
+    console.log("Skipping public JWKS generation as requested.");
+  }
+
+  console.log("\nWARNING: Keep your private keys and private JWKS secure!");
+  console.log("Do not share the private keys or include them in your application code.");
 }
 
 // Execute the script

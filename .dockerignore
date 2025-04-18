@@ -1,0 +1,34 @@
+# Version control
+.git
+.gitignore
+
+# Node.js
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build artifacts
+/public/dist
+
+# Data directory (will be mounted as a volume)
+/data
+
+# Logs
+/log
+*.log
+
+# Development files
+.idea
+.vscode
+*.swp
+*.swo
+
+# Test files
+/test
+/coverage
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore

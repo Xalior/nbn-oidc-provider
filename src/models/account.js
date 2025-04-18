@@ -3,7 +3,7 @@ import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
 import { and, eq } from 'drizzle-orm';
 import config from '../../data/config.js'
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export const generateAccountId = ()=>{
     return nanoid(16)

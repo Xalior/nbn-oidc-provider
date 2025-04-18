@@ -7,7 +7,6 @@
                 <div class="card-body p-5">
 
                     <form method="POST" action="/register" class="form-register">
-                        <!-- CSRF Protection -->
                         <input type="hidden" name="_csrf" value="{{csrfToken}}">
 
                         {{#reg_form.errors.display_name}}

@@ -116,6 +116,7 @@ export default (app) => {
 
                     return res.redirect(`/`);
                 } else {
+                    if(!req.body.errors) {req.body.errors = {};};
                     req.body.errors.email = "Please confirm your email address matches your account..."
                     console.log("Failing ",confirmation_code, " VS ", reset_form);
                 }

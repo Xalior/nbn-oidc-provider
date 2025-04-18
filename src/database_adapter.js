@@ -2,6 +2,8 @@ import {Client} from './models/clients.js';
 import Redis from 'ioredis';
 import config from "../data/config.js";
 
+console.log("cache: " + config.cache_url);
+
 const cache = new Redis(config.cache_url);
 import epochTime from 'oidc-provider/lib/helpers/epoch_time.js';
 
@@ -33,7 +35,7 @@ const grantable = new Set([
     'BackchannelAuthenticationRequest',
 ]);
 
-const DEBUG_ADAPTER = true;
+const DEBUG_ADAPTER = false;
 
 const storable = new Set([
     // oidc-provider

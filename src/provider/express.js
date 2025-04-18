@@ -76,6 +76,7 @@ export default (app, provider) => {
 
             console.log("Login Form Session: ", req.session);
 
+            // console.log(req.csrfToken());
             switch (prompt.name) {
                 case 'login': {
                     return res.render('login', {
@@ -85,7 +86,6 @@ export default (app, provider) => {
                         params,
                         title: 'Sign-in',
                         session: session ? debug(session) : undefined,
-                        csrfToken: req.csrfToken(), // Explicitly pass CSRF token
                         dbg: {
                             params: debug(params),
                             prompt: debug(prompt),
@@ -151,7 +151,6 @@ export default (app, provider) => {
 
             return res.render('mfa', {
                 'uid': req.param("uid"),
-                'csrfToken': req.csrfToken(), // Explicitly pass CSRF token
             });
 
         } catch (err) {
@@ -207,7 +206,6 @@ export default (app, provider) => {
 
                 return res.render('mfa', {
                     'uid': req.param("uid"),
-                    'csrfToken': req.csrfToken(), // Explicitly pass CSRF token
                 });
 
             }

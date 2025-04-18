@@ -48,12 +48,28 @@ app.use(session({
 }));
 
 // Setup CSRF protection
-const csrfProtection = csrf({ cookie: false });
-app.use(csrfProtection);
+const csrfProtection = csrf({
+    cookie: false,
+    ignoreMethods: ['GET', 'HEAD', 'OPTIONS']
+});
 
 // Make CSRF token available to all templates
 app.use((req, res, next) => {
-    res.locals.csrfToken = req.csrfToken();
+    if(req.path.startsWith('/token')
+        || req.path.startsWith('/session/end/confirm')
+    ) {
+        next();
+    } else {
+        csrfProtection(req, res, next);
+    }
+});
+// Make CSRF token available to all templates
+app.use((req, res, next) => {
+    if(!req.path.startsWith('/token')
+        && !req.path.startsWith('/session/end/confirm')
+    ) {
+        res.locals.csrfToken = req.csrfToken();
+    }
     next();
 });
 
@@ -92,15 +108,10 @@ app.use((req, res, next) => {
     //  Before we dispatch to our renderer, inject our constant requirements
     res.render = async (view, locals) => {
 
-        console.log("VIEW: ", view, hide_headers.includes(view));
         if(req.user) {
-            console.log(req.user);
-
             const account = (await Account.findAccount(req, req.user.sub));
-            console.log("Account:",account);
             req.user = account.profile['user'];
         }
-
 
         locals = {
             ...locals,
@@ -109,6 +120,7 @@ app.use((req, res, next) => {
             warnings: req.flash('warning'),
             successes: req.flash('success'),
             user: req.user,
+            csrfToken: res.locals.csrfToken,
             hide_header: hide_headers.includes(view)
         }
 
@@ -225,6 +237,7 @@ try {
 
     // Configure provider routes and middleware
     provider_routes(app, provider);
+
     app.use(provider.callback());
 
     // Start the server

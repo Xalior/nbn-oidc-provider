@@ -29,11 +29,13 @@
         "mustache-express": "^1.3.2",
         "mysql2": "^3.12.0",
         "nanoid": "^5.0.9",
+        "node-jose": "^2.2.0",
         "nodemailer": "^6.10.0",
         "nodemon": "^3.1.9",
         "oidc-provider": "^8.6.0",
         "openid-client": "^6.1.7",
         "passport": "^0.7.0",
+        "pem-jwk": "^2.0.0",
         "rotating-file-stream": "^3.2.5",
         "slugify": "^1.6.6"
     },

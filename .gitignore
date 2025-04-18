@@ -1,7 +1,14 @@
-data/config.js
+# Ignore key directories and files
+keys/
+*.pem
+*.jwk.json
+
+# Ignore specific generated files
+private_pkcs8.pem
+privateKey.jwk.json
+
 node_modules
 .idea
-data/sqlite.db
 log/*
-data/testdata.js
+data/*
 .DS_Store

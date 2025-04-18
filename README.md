@@ -2,6 +2,16 @@
 
 An OpenID Connect (OIDC) Provider implementation that allows you to authenticate users and issue tokens for authorized applications.
 
+## Project Overview
+
+This project consists of two main components:
+
+1. **OIDC Provider**: A standards-compliant OpenID Connect identity provider that handles authentication and authorization flows.
+
+2. **Admin Client**: Functions as an OIDC credential controller for account administration, user management, and application registration.
+
+The dual architecture allows for a complete identity management solution where the provider handles the core OIDC protocols while the client provides user-friendly interfaces for managing credentials, accounts, and application access.
+
 ## Package Manager: pnpm
 
 This project uses [pnpm](https://pnpm.io/) as its package manager. Please do not use npm or yarn to install dependencies or run scripts.
@@ -212,3 +222,22 @@ pnpm run db:remake
 ```bash
 pnpm run wdio
 ```
+
+## TODO List
+
+### Planned Improvements
+
+- [ ] Port to TypeScript
+- [ ] Add plugin interface
+- [ ] Tidy up theme management / move error handler code out of config
+- [ ] Write page explaining what OIDC is
+- [ ] Write page explaining what our closed circiut nextbestnetwork is
+
+### Wishlist Improvements
+
+- [ ] Implement comprehensive unit and integration test suite
+- [ ] Add API documentation with Swagger/OpenAPI
+- [ ] Create user management dashboard with role-based access control
+- [ ] Implement additional multi-factor authentication options
+- [ ] Add support for social login providers (Google, GitHub, etc.) via next-auth atop passport
+- [ ] Create a monitoring and analytics dashboard

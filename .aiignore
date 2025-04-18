@@ -6,7 +6,10 @@
 *.log
 *.tmp
 
+!data/*.example
+data/
 # or folders
 dist/
 build/
 out/
+keys/

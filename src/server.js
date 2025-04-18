@@ -17,6 +17,7 @@ import client_routes from './controller/routes.js';
 import morgan from 'morgan';
 import bodyParser from "body-parser";
 import slugify from "slugify";
+import csrf from "@dr.pogodin/csurf";
 
 import * as openidClient from 'openid-client'
 import passport from 'passport';
@@ -38,13 +39,23 @@ app.use(morgan('combined', { stream: log.logstream }))
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(session({
-    secret: 'nbn-id-dev',
+    secret: process.env.SESSION_SECRET || 'session-secret',
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: true
+        secure: process.env.NODE_ENV === 'production' || config.force_https === true
     }
 }));
+
+// Setup CSRF protection
+const csrfProtection = csrf({ cookie: false });
+app.use(csrfProtection);
+
+// Make CSRF token available to all templates
+app.use((req, res, next) => {
+    res.locals.csrfToken = req.csrfToken();
+    next();
+});
 
 app.use(flash());
 
@@ -113,8 +124,8 @@ app.use((req, res, next) => {
     next();
 });
 
-const client_id = "SELF";
-const client_secret = "SELF_SECRET";
+const client_id = process.env.CLIENT_ID || "SELF";
+const client_secret = process.env.CLIENT_SECRET || "SELF_SECRET";
 
 let server, issuer;
 
@@ -259,6 +270,15 @@ try {
 
     // Error handling function(s) must be registered last...
     app.use((err, req, res, next) => {
+        if (err.code === 'EBADCSRFTOKEN') {
+            // Handle CSRF token errors
+            console.error('CSRF token validation failed');
+            // Don't use req.flash here as it might not be available
+            return res.status(403).render('error', { 
+                message: 'Security validation failed. Please try again.' 
+            });
+        }
+
         console.error(err);
         res.status(500).render('error', {});
     })

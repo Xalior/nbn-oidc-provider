@@ -11,7 +11,7 @@ services:
       - ./data:/app/data
     environment:
       - NODE_ENV=production
-      # You can override config values with environment variables if needed
+      # Database configuration - uncomment and modify for your environment
       # - DATABASE_URL=mysql://user:password@host:port/database
       # - CACHE_URL=redis://host:port/
     restart: unless-stopped

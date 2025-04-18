@@ -72,7 +72,8 @@
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit migrate",
         "db:push": "drizzle-kit push",
-        "db:remake": "rm -rf drizzle && rm -rf data/sqlite.db && pnpm run db:generate && pnpm run db:push",
+        "db:run-migrations": "node ./src/db/migrate.js",
+        "db:remake": "rm -rf drizzle && rm -rf data/sqlite.db && pnpm run db:generate && pnpm run db:push && pnpm run db:run-migrations",
         "wdio": "wdio run ./wdio.conf.js"
     }
 }

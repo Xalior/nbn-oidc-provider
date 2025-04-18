@@ -5,12 +5,14 @@
         <div class="card" style="border-radius: 15px;">
             <div class="card-body p-5">
                 <form class="form-signup  m-auto" autocomplete="off" action="/reconfirm" method="post">
+                    <!-- CSRF Protection -->
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
                     <p>
                         If you lost your confirmation email, or it expired then you can have another one sent to you by filling in your email address here.
                     </p>
                     {{#conf_form.errors.email}}
-                        <div class="invalid-feedback">
-                            {{{conf_form.errors.email}}}
+                        <div class="invalid-feedback d-block">
+                            {{conf_form.errors.email}}
                         </div>
                     {{/conf_form.errors.email}}
                     <div class="form-floating">

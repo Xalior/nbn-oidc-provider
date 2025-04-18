@@ -2,17 +2,20 @@ FROM node:22.14.0-alpine
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package.json and pnpm-lock.yaml
+COPY package.json pnpm-lock.yaml* ./
 
 # Install dependencies
-RUN npm ci
+RUN pnpm install
 
 # Copy the rest of the application code
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN pnpm build
 
 # Create a volume mount point for sensitive data
 VOLUME /app/data
@@ -20,5 +23,9 @@ VOLUME /app/data
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Command to run the application
-CMD ["npm", "start"]
+# Create a startup script that initializes the database and starts the application
+COPY docker-entrypoint.sh /app/
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Command to run the startup script
+CMD ["/app/docker-entrypoint.sh"]

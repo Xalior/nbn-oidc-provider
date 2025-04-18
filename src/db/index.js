@@ -1,5 +1,3 @@
-import { createClient } from '@libsql/client';
-// import { drizzle } from 'drizzle-orm/libsql';
 import { drizzle } from "drizzle-orm/mysql2";
 import config from '../../data/config.js';
 

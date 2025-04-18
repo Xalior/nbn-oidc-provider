@@ -3,9 +3,16 @@
         <div class="col-12 col-md-9 col-lg-7 col-xl-6">
             <h1 class="text-uppercase text-center mb-5">ERROR</h1>
             <div class="card" style="border-radius: 15px;">
-                Something bad happened...<br>
-                It happened...<br>
-                And it was bad.
+                <div class="card-body p-5">
+                    {{#message}}
+                        <p>{{message}}</p>
+                    {{/message}}
+                    {{^message}}
+                        <p>Something bad happened...<br>
+                        It happened...<br>
+                        And it was bad.</p>
+                    {{/message}}
+                </div>
             </div>
         </div>
     </div>

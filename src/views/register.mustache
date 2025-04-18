@@ -7,49 +7,52 @@
                 <div class="card-body p-5">
 
                     <form method="POST" action="/register" class="form-register">
+                        <!-- CSRF Protection -->
+                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+
                         {{#reg_form.errors.display_name}}
-                            <div class="invalid-feedback">
-                                {{{reg_form.errors.display_name}}}
+                            <div class="invalid-feedback d-block">
+                                {{reg_form.errors.display_name}}
                             </div>
                         {{/reg_form.errors.display_name}}
                         <div data-mdb-input-init="" class="form-outline mb-4">
-                            <input type="text" name="display_name" id="display_name" class="form-control form-control-lg" value="{{reg_form.display_name}}">
+                            <input type="text" name="display_name" id="display_name" class="form-control form-control-lg" value="{{reg_form.display_name}}" autocomplete="name">
                             <label class="form-label" for="display_name">Your Name</label>
                         </div>
 
                         {{#reg_form.errors.email}}
-                            <div class="invalid-feedback">
-                                {{{reg_form.errors.email}}}
+                            <div class="invalid-feedback d-block">
+                                {{reg_form.errors.email}}
                             </div>
                         {{/reg_form.errors.email}}
                         <div data-mdb-input-init="" class="form-outline mb-4">
-                            <input type="email" id="login_email" name="email" class="form-control form-control-lg" value="{{reg_form.email}}" novalidate>
+                            <input type="email" id="login_email" name="email" class="form-control form-control-lg" value="{{reg_form.email}}" autocomplete="email">
                             <label class="form-label" for="email">Your Email</label>
                         </div>
 
                         {{#reg_form.errors.password_1}}
-                            <div class="invalid-feedback">
-                                {{{reg_form.errors.password_1}}}
+                            <div class="invalid-feedback d-block">
+                                {{reg_form.errors.password_1}}
                             </div>
                         {{/reg_form.errors.password_1}}
                         <div data-mdb-input-init="" class="form-outline mb-4">
-                            <input type="password" id="login_password" name="password_1" class="form-control form-control-lg" value="{{reg_form.password_1}}" novalidate>
+                            <input type="password" id="login_password" name="password_1" class="form-control form-control-lg" autocomplete="new-password">
                             <label class="form-label" for="password_1">Password</label>
                         </div>
 
                         {{#reg_form.errors.password_2}}
-                            <div class="invalid-feedback">
-                                {{{reg_form.errors.password_2}}}
+                            <div class="invalid-feedback d-block">
+                                {{reg_form.errors.password_2}}
                             </div>
                         {{/reg_form.errors.password_2}}
                         <div data-mdb-input-init="" class="form-outline mb-4">
-                            <input type="password" id="login_password_confirm" name="password_2" class="form-control form-control-lg" value="{{reg_form.password_2}}" novalidate>
+                            <input type="password" id="login_password_confirm" name="password_2" class="form-control form-control-lg" autocomplete="new-password">
                             <label class="form-label" for="password_2">Repeat your password</label>
                         </div>
 
                         {{#reg_form.errors.agree_tos}}
-                            <div class="invalid-feedback">
-                                {{{reg_form.errors.agree_tos}}}
+                            <div class="invalid-feedback d-block">
+                                {{reg_form.errors.agree_tos}}
                             </div>
                         {{/reg_form.errors.agree_tos}}
                         <div class="form-check d-flex justify-content-center mb-5">
@@ -59,8 +62,9 @@
                             </label>
                         </div>
 
-                        <div class="form-check d-flex justify-content-center mb-5">
-                            <input class="form-check-input me-2" type="checkbox" id="confirm_spammer" name="confirm_spammer" {{#reg_form.confirm_spammer}}checked{{/reg_form.confirm_spammer}}>
+                        <!-- Honeypot field - hidden from users -->
+                        <div class="form-check d-none">
+                            <input class="form-check-input" type="checkbox" id="confirm_spammer" name="confirm_spammer" {{#reg_form.confirm_spammer}}checked{{/reg_form.confirm_spammer}}>
                             <label class="form-check-label" for="confirm_spammer">
                                 I confirm that I am a spammer.
                             </label>

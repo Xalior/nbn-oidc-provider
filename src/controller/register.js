@@ -31,7 +31,7 @@ export default (app) => {
 
                 if (existing_user) {
                     if (!existing_user.verified) {
-                        throw new Error("User already exists - have <a href=\"reconfirm\">lost your confirmation link</a>?");
+                        throw new Error("User already exists - have you <a href=\"reconfirm\">lost your confirmation link</a>?");
                     }
 
                     if (existing_user.suspended) {

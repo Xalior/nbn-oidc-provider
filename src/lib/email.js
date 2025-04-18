@@ -4,43 +4,55 @@ import {createTransport} from "nodemailer";
 export const transporter = createTransport(config.smtp);
 
 export const sendConfirmationEmail = async (email, confirmation_code) => {
+  // Properly format the confirmation URL with a named parameter
+  const confirmationUrl = `${config.provider_url}confirm?code=${confirmation_code}`;
+
   // send mail with defined transport object
   const info = await transporter.sendMail({
     from: '"NBN:ID" <noreply@nextbestnetwork.com>', // sender address
     to: email, // list of receivers
     subject: "✔ NBN:ID Account Confirmation", // Subject line
     text: `NBN:ID Account Confirmation Email
-    
-    Please visit ${config.provider_url}confirm?${confirmation_code} to confirm your account`, // plain text body
 
-    html: `<b>NBN:ID Account Confirmation Email<a><br>
+    Please visit ${confirmationUrl} to confirm your account`, // plain text body
+
+    html: `<b>NBN:ID Account Confirmation Email</b><br>
   <br>
-  Please visit <a href="${config.provider_url}confirm?${confirmation_code}">
-    ${config.provider_url}confirm?${confirmation_code}</a> to confirm your account`,
+  Please visit <a href="${confirmationUrl}">
+    ${confirmationUrl}</a> to confirm your account`,
   });
 
-  console.log("Message sent: %s", info);
+  // Log only necessary information, not the entire info object
+  console.log(`Confirmation email sent to ${email} with message ID: ${info.messageId}`);
 }
 
 export const sendLoginPinEmail = async (req, email, pin_code, request_time) => {
+  // Format the reset password URL
+  const resetPasswordUrl = `${config.provider_url}lost_password`;
+
+  // Format client information safely
+  const clientInfo = typeof req === 'object' ? 
+    `IP: ${req.ip || 'unknown'}, User-Agent: ${req.headers?.['user-agent'] || 'unknown'}` : 
+    String(req).substring(0, 100); // Limit length for safety
+
   // send mail with defined transport object
   const info = await transporter.sendMail({
     from: '"NBN:ID" <noreply@nextbestnetwork.com>', // sender address
     to: email, // list of receivers
     subject: "🔒 NBN:ID Login PIN", // Subject line
     text: `NBN:ID Login PIN
-    
+
     You attempted to log into NBN:ID - and that required this time sensitive passcode.
-    
+
     Your one use passcode is: ${pin_code}
-    
+
     If you did not log in, then someone could have your password!
     You should log in, immediately, and change your password to something new - and unique.
-    
-    Please visit ${config.provider_url}lost_password to reset your password.
-    
-    This login attempt came from ${req} at ${request_time}.`, // plain text body
-    html: `<b>NBN:ID Login PIN<a><br>
+
+    Please visit ${resetPasswordUrl} to reset your password.
+
+    This login attempt came from ${clientInfo} at ${request_time}.`, // plain text body
+    html: `<b>NBN:ID Login PIN</b><br>
   <br>
     You attempted to log into NBN:ID - and that required this time sensitive passcode.
   <br>
@@ -49,30 +61,39 @@ export const sendLoginPinEmail = async (req, email, pin_code, request_time) => {
     If you did not log in, then someone could have your password!
     You should log in, immediately, and change your password to something new - and unique.
   <br>
-  Please visit <a href="${config.provider_url}lost_password">
-    ${config.provider_url}lost_password</a> to reset your password.
-    
-    This login attempt came from ${req} at ${request_time}.`, // plain text body,
+  Please visit <a href="${resetPasswordUrl}">
+    ${resetPasswordUrl}</a> to reset your password.
+  <br><br>
+    This login attempt came from ${clientInfo} at ${request_time}.`,
   });
 
-  console.log("Message sent: %s", info);
+  // Log only necessary information, not the entire info object
+  console.log(`Login PIN email sent to ${email} with message ID: ${info.messageId}`);
 }
 
 export const sendPasswordResetEmail = async (email, confirmation_code) => {
+  // Properly format the reset password URL with a named parameter
+  const resetPasswordUrl = `${config.provider_url}reset_password?code=${confirmation_code}`;
+
   // send mail with defined transport object
   const info = await transporter.sendMail({
     from: '"NBN:ID" <noreply@nextbestnetwork.com>', // sender address
     to: email, // list of receivers
     subject: "✔ NBN:ID Password Reset", // Subject line
     text: `NBN:ID Password Reset Email
-    
-    Please visit ${config.provider_url}reset_password?${confirmation_code} to reset your account`, // plain text body
 
-    html: `<b>NBN:ID Password Reset Email<a><br>
+    Please visit ${resetPasswordUrl} to reset your password.
+
+    If you did not request a password reset, please ignore this email or contact support if you have concerns.`, // plain text body
+
+    html: `<b>NBN:ID Password Reset Email</b><br>
   <br>
-  Please visit <a href="${config.provider_url}reset_password?${confirmation_code}">
-    ${config.provider_url}reset_password?${confirmation_code}</a> to reset your password`,
+  Please visit <a href="${resetPasswordUrl}">
+    ${resetPasswordUrl}</a> to reset your password.
+  <br><br>
+  If you did not request a password reset, please ignore this email or contact support if you have concerns.`,
   });
 
-  console.log("Message sent: %s", info);
+  // Log only necessary information, not the entire info object
+  console.log(`Password reset email sent to ${email} with message ID: ${info.messageId}`);
 }

@@ -4,7 +4,12 @@
     "description": "",
     "main": "src/server.js",
     "private": true,
+    "engines": {
+        "node": ">=16.0.0",
+        "pnpm": ">=8.0.0"
+    },
     "dependencies": {
+        "@dr.pogodin/csurf": "^1.14.1",
         "@libsql/client": "^0.14.0",
         "@libsql/core": "^0.14.0",
         "@popperjs/core": "^2.11.8",
@@ -49,6 +54,7 @@
         "css-loader": "^7.1.2",
         "drizzle-kit": "^0.30.2",
         "mini-css-extract-plugin": "^2.9.2",
+        "only-allow": "^1.2.1",
         "postcss-loader": "^8.1.1",
         "sass": "^1.83.4",
         "sass-loader": "^16.0.4",
@@ -59,13 +65,14 @@
         "webpack-dev-server": "^5.2.0"
     },
     "scripts": {
+        "preinstall": "npx only-allow pnpm",
         "start": "node ./src/server.js",
-        "build": "npx webpack build",
+        "build": "pnpm exec webpack build",
         "nodemon": "nodemon ",
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit migrate",
         "db:push": "drizzle-kit push",
-        "db:remake": "rm -rf drizzle && rm -rf data/sqlite.db && npm run db:generate && npm run db:push",
+        "db:remake": "rm -rf drizzle && rm -rf data/sqlite.db && pnpm run db:generate && pnpm run db:push",
         "wdio": "wdio run ./wdio.conf.js"
     }
 }

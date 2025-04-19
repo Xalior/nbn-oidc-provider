@@ -5,7 +5,7 @@ export const transporter = createTransport(config.smtp);
 
 export const sendConfirmationEmail = async (email, confirmation_code) => {
   // Properly format the confirmation URL with a named parameter
-  const confirmationUrl = `${config.provider_url}confirm?code=${confirmation_code}`;
+  const confirmationUrl = `${config.provider_url}confirm?${confirmation_code}`;
 
   // send mail with defined transport object
   const info = await transporter.sendMail({
@@ -73,7 +73,7 @@ export const sendLoginPinEmail = async (req, email, pin_code, request_time) => {
 
 export const sendPasswordResetEmail = async (email, confirmation_code) => {
   // Properly format the reset password URL with a named parameter
-  const resetPasswordUrl = `${config.provider_url}reset_password?code=${confirmation_code}`;
+  const resetPasswordUrl = `${config.provider_url}reset_password?${confirmation_code}`;
 
   // send mail with defined transport object
   const info = await transporter.sendMail({

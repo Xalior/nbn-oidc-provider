@@ -8,6 +8,7 @@ export default (app) => {
             const age_limit = new Date(Date.now() - (60*30));
             const query_string = req.url.replace(/^\/confirm\?/, '');
 
+            console.log("query_string:", query_string);
             // Search for a confirmation code that matches the raw query string
             const confirmation_code = await db.select()
             .from(confirmation_codes)
@@ -15,6 +16,8 @@ export default (app) => {
                 eq(confirmation_codes.confirmation_code, query_string)
             )
             .limit(1);
+
+            console.log("confirmation_code:", confirmation_code);
 
             // If we found it, mark the user as confirmed, and redir to login
             if(confirmation_code.length) {

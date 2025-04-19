@@ -68,7 +68,6 @@ class AuthPage extends Page {
     }
 
     async reset_password(reset_code, admin_email, admin_password) {
-        await get_reset_code();
         await super.open(`/reset_password?${reset_code}`);
         await this.inputEmail.setValue(admin_email);
         await this.inputPassword.setValue(admin_password);

@@ -88,7 +88,8 @@ export default (app) => {
                     .where(
                         and(
                             eq(confirmation_codes.user_id, users.id),
-                            eq(confirmation_codes.used, false)
+                            eq(confirmation_codes.used, false),
+                            eq(confirmation_codes.confirmation_code, query_string)
                         )
                     )
                     .limit(1))[0];

@@ -139,6 +139,13 @@ export default (app, provider) => {
                 return res.redirect(`/interaction/${details.jti}`);
             }
 
+            // Store remember_me preference in session
+            if (req.body.remember_me) {
+                req.session.remember_me = true;
+                // Set a longer cookie expiration when "remember me" is checked
+                req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+            }
+
             const mfa_pin = ('000000'+Math.floor(Math.random() * 1000000)).slice(-6);
             const request_time = new Date().toJSON();
             await mfaCode.upsert(req.param("uid"), {

@@ -223,21 +223,12 @@ pnpm run db:remake
 pnpm run wdio
 ```
 
-## TODO List
+## Features
 
-### Planned Improvements
+### Authentication Features
 
-- [ ] Port to TypeScript
-- [ ] Add plugin interface
-- [ ] Tidy up theme management / move error handler code out of config
-- [ ] Write page explaining what OIDC is
-- [ ] Write page explaining what our closed circiut nextbestnetwork is
+- **Multi-Factor Authentication**: Email-based PIN verification for secure login
+- **Remember Me**: Option to stay logged in for extended periods (30 days)
+- **Password Reset**: Self-service password recovery flow
+- **Account Confirmation**: Email verification for new accounts
 
-### Wishlist Improvements
-
-- [ ] Implement comprehensive unit and integration test suite
-- [ ] Add API documentation with Swagger/OpenAPI
-- [ ] Create user management dashboard with role-based access control
-- [ ] Implement additional multi-factor authentication options
-- [ ] Add support for social login providers (Google, GitHub, etc.) via next-auth atop passport
-- [ ] Create a monitoring and analytics dashboard

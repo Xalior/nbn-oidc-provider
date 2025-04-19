@@ -1,0 +1,24 @@
+## TODO List
+
+### Recently Implemented Features
+- [x] "Remember me" checkbox functionality for login
+  - Added name attribute to the existing checkbox in login form
+  - Modified session handling to set a 30-day expiration when "remember me" is checked
+
+### Planned Improvements
+- [ ] Port to TypeScript
+- [ ] Add plugin interface
+- [ ] Tidy up theme management / move error handler code out of config
+- [ ] Write page explaining what OIDC is
+- [ ] Write page explaining what our closed circiut nextbestnetwork is
+- [ ] More MFA options beyond email PIN (e.g., TOTP, WebAuthn)
+
+### Wishlist Improvements
+
+- [ ] Implement comprehensive unit and integration test suite
+- [ ] Add API documentation with Swagger/OpenAPI
+- [ ] Create user management dashboard with role-based access control
+- [ ] Implement additional multi-factor authentication options
+- [ ] Add support for social login providers (Google, GitHub, etc.) via next-auth atop passport
+- [ ] Create a monitoring and analytics dashboard
+- [ ] Add session management features (view active sessions, logout from all devices)

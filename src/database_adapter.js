@@ -82,9 +82,22 @@ class DatabaseAdapter {
         this.model = name;
     }
 
+    /**
+     *
+     * Generates the storage key string for a given model instance.
+     *
+     * @param {string} id Identifier for the stored instance.
+     * @return {string} Fully qualified key used in the key-value store.
+     *
+     * The key is namespaced using the configured slug and the model name to
+     * prevent collisions across different models and environments. This is
+     * used for all operations involving storage, retrieval, and deletion.
+     *
+     */
     key(id) {
         return `${config.slug}:${this.model}:${id}`;
     }
+
     /**
      *
      * Update or Create an instance of an oidc-provider model.

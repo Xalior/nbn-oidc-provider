@@ -8,6 +8,7 @@
 ### Planned Improvements
 - [ ] Port to TypeScript
 - [ ] Add plugin interface
+- [ ] Support LogoutToken for Server-to-Server logout messages
 - [ ] Tidy up theme management / move error handler code out of config
 - [ ] Write page explaining what OIDC is
 - [ ] Write page explaining what our closed circiut nextbestnetwork is

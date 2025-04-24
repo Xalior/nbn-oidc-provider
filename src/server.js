@@ -197,8 +197,6 @@ passport.deserializeUser((user, cb) => {
     return cb(null, user)
 })
 
-let claims = [];
-
 try {
     // Initialize database adapter if MongoDB URI is provided
     let adapter;
@@ -266,17 +264,20 @@ try {
             const me = await openidClient.fetchUserInfo(issuer, tokens.access_token, this_claim.sub);
             console.log("openidClient.fetchUserInfo: ", me);
 
-            // At this point, if we want local profile data - we should create it here, if it does not already exist
-            claims[this_claim.sub] = {
-                access_token: tokens.access_token,
-                id_token: tokens.id_token,
-                token_type: tokens.token_type,
-                scope: tokens.scope,
-                expires_in: tokens.expires_in,
-                refresh_token: tokens.refresh_token,
-                me: me
-            };
+            // // At this point, if we want local profile data
+            // // we should create it here, if it does not already exist
+            // // but we're the controller, so we already have this...
+            // claims[this_claim.sub] = {
+            //     access_token: tokens.access_token,
+            //     id_token: tokens.id_token,
+            //     token_type: tokens.token_type,
+            //     scope: tokens.scope,
+            //     expires_in: tokens.expires_in,
+            //     refresh_token: tokens.refresh_token,
+            //     me: me
+            // };
 
+            // Turn the claim into a passport user object
             verified(null, this_claim);
         }
     ));
@@ -285,7 +286,7 @@ try {
     app.use((err, req, res, next) => {
         if (err.code === 'EBADCSRFTOKEN') {
             // Handle CSRF token errors
-            console.error('CSRF token validation failed');
+            console.error(`ERROR: CSRF token validation failed - IP:${req.ip} - ${req.method} ${req.originalUrl} - ${req.body ? JSON.stringify(req.body) : ''}`);
             // Don't use req.flash here as it might not be available
             return res.status(403).render('error', { 
                 message: 'Security validation failed. Please try again.' 

@@ -21,7 +21,7 @@ RUN pnpm build
 VOLUME /app/data
 
 # Expose the port the app runs on
-#EXPOSE 3000
+EXPOSE 5000
 
 # Create a startup script that initializes the database and starts the application
 COPY docker-entrypoint.sh /app/

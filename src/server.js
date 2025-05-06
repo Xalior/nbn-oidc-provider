@@ -25,7 +25,7 @@ import { Strategy } from 'openid-client/passport'
 
 const __dirname = dirname(import.meta.url);
 
-const { PORT = 3000, ISSUER = `https://localhost:${PORT}` } = process.env;
+const { PORT = 5000, ISSUER = `https://localhost:${PORT}` } = process.env;
 
 // Set up account finder
 config.findAccount = Account.findAccount;

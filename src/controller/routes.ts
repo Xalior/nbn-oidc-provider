@@ -1,11 +1,10 @@
-/* eslint-disable no-console, camelcase, no-unused-vars */
-import home from './home.js';
+import home from './home.ts';
 import register from './register.ts';
-import confirm from './confirm.js';
-import reconfirm from './reconfirm.js';
-import profile from './profile.js';
-import lost_password from './lost_password.js';
-import reset_password from "./reset_password.js";
+import confirm from './confirm.ts';
+import reconfirm from './reconfirm.ts';
+import profile from './profile.ts';
+import lost_password from './lost_password.ts';
+import reset_password from "./reset_password.ts";
 import { Application } from 'express';
 
 export default (app: Application): void => {

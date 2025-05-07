@@ -1,6 +1,6 @@
 import {Client} from './models/clients.js';
 import Redis from 'ioredis';
-import config from "../data/config.js";
+import config from "../data/config.ts";
 
 console.log("cache: " + config.cache_url);
 

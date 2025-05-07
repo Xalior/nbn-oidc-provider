@@ -54,8 +54,7 @@
         "passport": "^0.7.0",
         "pem-jwk": "^2.0.0",
         "rotating-file-stream": "^3.2.5",
-        "slugify": "^1.6.6",
-        "wdio": "^6.0.1"
+        "slugify": "^1.6.6"
     },
     "type": "module",
     "devDependencies": {

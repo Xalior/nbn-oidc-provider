@@ -4,7 +4,7 @@ import { db } from "../../../src/db/index.ts";
 import { confirmation_codes } from "../../../src/db/schema.ts";
 import { and, eq } from "drizzle-orm";
 
-import testdata from "../../../data/testdata.ts";
+import testdata from "../../../data/testdata.js";
 
 describe('Registration:Failures', () => {
     it("01: Can't register a duplicate...", async () => {

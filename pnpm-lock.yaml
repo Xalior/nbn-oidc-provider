@@ -110,9 +110,6 @@ importers:
       slugify:
         specifier: ^1.6.6
         version: 1.6.6
-      wdio:
-        specifier: ^6.0.1
-        version: 6.0.1
     devDependencies:
       '@types/bcryptjs':
         specifier: ^2.4.6
@@ -1624,10 +1621,6 @@ packages:
 
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
-
-  commander@8.3.0:
-    resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
-    engines: {node: '>= 12'}
 
   commander@9.5.0:
     resolution: {integrity: sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==}
@@ -4001,11 +3994,6 @@ packages:
     resolution: {integrity: sha512-FTRW/X36aCEQEDJGHmsWgpAlItxtUh49lG6EEaodR74vJGMjK8YeeSHA29eC33HPwLIlxbM+2IFi2kTUdwj5Ig==}
     engines: {node: '>=18 || >=20 || >=22'}
 
-  wdio@6.0.1:
-    resolution: {integrity: sha512-mH5/Emi+F9gI7IQTuWA8/TRjS1oBg/gQonV0sSucgUMGEVU+e3Ng/wm9v86/OAHo4HAz/B5GA0+WW7cVHVo3eA==}
-    deprecated: 'This package got deprecated. Please use the ''create-wdio'' starter toolkit via: ''npm init wdio ./path/to/project'' or ''yarn create wdio ./path/to/project''.'
-    hasBin: true
-
   web-streams-polyfill@3.3.3:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
     engines: {node: '>= 8'}
@@ -5587,8 +5575,6 @@ snapshots:
   commander@12.1.0: {}
 
   commander@2.20.3: {}
-
-  commander@8.3.0: {}
 
   commander@9.5.0: {}
 
@@ -7990,13 +7976,6 @@ snapshots:
     optional: true
 
   wdio-wait-for@3.1.0: {}
-
-  wdio@6.0.1:
-    dependencies:
-      chalk: 4.1.2
-      commander: 8.3.0
-      cross-spawn: 7.0.6
-      semver: 7.7.1
 
   web-streams-polyfill@3.3.3: {}
 

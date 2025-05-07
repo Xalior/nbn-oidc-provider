@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { hashAccountPassword } from "../../../src/models/account.ts";
 import * as assert from "node:assert";
 
-import testdata from "../../../data/testdata.ts";
+import testdata from "../../../data/testdata.js";
 
 describe('Authentication:Bad Login', () => {
     async function init(): Promise<void> {

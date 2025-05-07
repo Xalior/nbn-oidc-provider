@@ -1,16 +1,16 @@
-import {expect} from '@wdio/globals'
-import AuthPage from '../../pageobjects/auth.page.js'
-import {db} from "../../../src/db/index.js";
-import {confirmation_codes, users} from "../../../src/db/schema.js";
-import {and, eq} from "drizzle-orm";
-import {hashAccountPassword} from "../../../src/models/account.js";
+import { expect } from '@wdio/globals'
+import AuthPage from '../../pageobjects/auth.page.ts'
+import { db } from "../../../src/db/index.ts";
+import { confirmation_codes, users } from "../../../src/db/schema.ts";
+import { and, eq } from "drizzle-orm";
+import { hashAccountPassword } from "../../../src/models/account.ts";
 
-const admin_email = 'darran@xalior.com';
-let admin_password = '123123qweqweASDASD';
-const admin_account_id = 1;
+const admin_email: string = 'darran@xalior.com';
+let admin_password: string = '123123qweqweASDASD';
+const admin_account_id: number = 1;
 
 describe('Authentication:Lost Password', () => {
-    async function init() {
+    async function init(): Promise<void> {
         let res = await db.update(users).set({
             login_attempts: 0,
             password: await hashAccountPassword(admin_password),
@@ -19,7 +19,6 @@ describe('Authentication:Lost Password', () => {
 
         res = await db.delete(confirmation_codes).where(eq(confirmation_codes.user_id, admin_account_id));
         console.log("Reset admin 'confirmation_codes':", res[0]['affectedRows']);
-
     }
 
     it("00: PREREQS", async () => {

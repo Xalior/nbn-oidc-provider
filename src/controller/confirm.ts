@@ -1,5 +1,5 @@
-import { users, confirmation_codes } from '../db/schema.ts';
-import { db } from "../db/index.ts";
+import { users, confirmation_codes } from "../db/schema";
+import { db } from "../db/index";
 import { eq, and, gte } from "drizzle-orm";
 import { Request, Response, NextFunction, Application } from 'express';
 

@@ -1,10 +1,10 @@
-import {$, expect} from '@wdio/globals'
-import RegistrationPage from '../../pageobjects/registration.page.js'
-import {db} from "../../../src/db/index.js";
-import {confirmation_codes} from "../../../src/db/schema.js";
-import {and, eq} from "drizzle-orm";
+import { expect } from '@wdio/globals'
+import RegistrationPage from '../../pageobjects/registration.page.ts'
+import { db } from "../../../src/db/index.ts";
+import { confirmation_codes } from "../../../src/db/schema.ts";
+import { and, eq } from "drizzle-orm";
 
-import testdata from "../../../data/testdata.js";
+import testdata from "../../../data/testdata.ts";
 
 describe('Registration:Failures', () => {
     it("01: Can't register a duplicate...", async () => {
@@ -47,5 +47,4 @@ describe('Registration:Failures', () => {
         await RegistrationPage.register("Short on Upper", testdata.newuser.email, "123123QWEQWE", "123123QWEQWE");
         await expect(RegistrationPage.invalidFeedback).toHaveText(expect.stringContaining('Strong password required'));
     });
-
 });

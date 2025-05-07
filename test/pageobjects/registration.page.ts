@@ -1,10 +1,10 @@
 import { $, browser } from '@wdio/globals'
-import Page from './page.js';
-import {db} from "../../src/db/index.js";
-import {confirmation_codes} from "../../src/db/schema.js";
-import {eq, desc, asc } from "drizzle-orm";
+import Page from './page.ts';
+import { db } from "../../src/db/index.ts";
+import { confirmation_codes } from "../../src/db/schema.ts";
+import { eq, desc } from "drizzle-orm";
 
-async function get_reset_code() {
+async function get_reset_code(): Promise<any> {
     const reset_code = (await db.select()
         .from(confirmation_codes)
         .where(
@@ -25,31 +25,31 @@ class RegistrationPage extends Page {
     /**
      * define selectors using getter methods
      */
-    get inputName () {
+    get inputName() {
         return $('#display_name');
     }
 
-    get inputEmail () {
+    get inputEmail() {
         return $('#login_email');
     }
 
-    get inputPassword1 () {
+    get inputPassword1() {
         return $('#login_password');
     }
 
-    get inputPassword2 () {
+    get inputPassword2() {
         return $('#login_password_confirm');
     }
 
-    get invalidFeedback () {
+    get invalidFeedback() {
         return $('.invalid-feedback');
     }
 
-    get btnSubmit () {
+    get btnSubmit() {
         return $('button[type="submit"]');
     }
 
-    async register (name, email, password1, password2) {
+    async register(name: string, email: string, password1: string, password2: string): Promise<void> {
         await this.open();
         await this.inputName.setValue(name);
         await this.inputEmail.setValue(email);
@@ -66,8 +66,8 @@ class RegistrationPage extends Page {
     /**
      * overwrite specific options to adapt it to page object
      */
-    async open (url) {
-        if(!url) url='/register';
+    async open(url?: string): Promise<string> {
+        if (!url) url = '/register';
         return await super.open(url);
     }
 }

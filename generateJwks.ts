@@ -9,7 +9,7 @@ const RSA_PRIVATE_KEY_PATH = path.join(OUTPUT_DIR, "rsa_private.pem");
 const EC_PRIVATE_KEY_PATH = path.join(OUTPUT_DIR, "ec_private.pem");
 
 // Helper function to ask for confirmation
-function askQuestion(query) {
+function askQuestion(query: string): Promise<string> {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -22,12 +22,12 @@ function askQuestion(query) {
 }
 
 // Function to check if output files already exist
-async function checkExistingFiles(forceOverwrite) {
+async function checkExistingFiles(forceOverwrite: boolean): Promise<void> {
   if (fs.existsSync(RSA_PRIVATE_KEY_PATH) || fs.existsSync(EC_PRIVATE_KEY_PATH)) {
     if (forceOverwrite) {
       console.log("Force overwrite enabled. Existing files will be deleted.");
-      fs.unlinkSync(RSA_PRIVATE_KEY_PATH);
-      fs.unlinkSync(EC_PRIVATE_KEY_PATH);
+      if (fs.existsSync(RSA_PRIVATE_KEY_PATH)) fs.unlinkSync(RSA_PRIVATE_KEY_PATH);
+      if (fs.existsSync(EC_PRIVATE_KEY_PATH)) fs.unlinkSync(EC_PRIVATE_KEY_PATH);
       return;
     }
 
@@ -51,7 +51,7 @@ async function checkExistingFiles(forceOverwrite) {
 }
 
 // Function to generate keys using OpenSSL
-function generateKeys() {
+function generateKeys(): void {
   try {
     console.log("Generating RSA private key...");
     execSync(`openssl genpkey -algorithm RSA -out ${RSA_PRIVATE_KEY_PATH} -pkeyopt rsa_keygen_bits:2048`);
@@ -61,23 +61,48 @@ function generateKeys() {
     execSync(`openssl ecparam -name prime256v1 -genkey -noout -out ${EC_PRIVATE_KEY_PATH}`);
     console.log("EC private key generated.");
   } catch (err) {
-    console.error("Error generating keys:", err.message);
+    console.error("Error generating keys:", (err as Error).message);
     process.exit(1);
   }
 }
 
+// Define types for JWK
+interface RsaJwk {
+  d?: string;
+  dp?: string;
+  dq?: string;
+  e: string;
+  kty: string;
+  n: string;
+  p?: string;
+  q?: string;
+  qi?: string;
+  use: string;
+}
+
+interface EcJwk {
+  crv: string;
+  d?: string;
+  kty: string;
+  use: string;
+  x: string;
+  y: string;
+}
+
+type JwkKey = RsaJwk | EcJwk;
+
 // Function to convert PEM to JWK and match the exact structure
-async function convertKeysToJwk(includePrivate = true) {
+async function convertKeysToJwk(includePrivate = true): Promise<JwkKey[]> {
   try {
     const keystore = jose.JWK.createKeyStore();
 
     // Read and convert RSA private key to JWK
     const rsaKeyPem = fs.readFileSync(RSA_PRIVATE_KEY_PATH, "utf8");
     const rsaKey = await keystore.add(rsaKeyPem, "pem");
-    const rsaJwk = rsaKey.toJSON(includePrivate); // Include private key if requested
+    const rsaJwk = rsaKey.toJSON(includePrivate) as any; // Include private key if requested
 
     // Create ordered JWK with or without private components
-    const orderedRsaJwk = includePrivate ? {
+    const orderedRsaJwk: RsaJwk = includePrivate ? {
       d: rsaJwk.d,
       dp: rsaJwk.dp,
       dq: rsaJwk.dq,
@@ -98,10 +123,10 @@ async function convertKeysToJwk(includePrivate = true) {
     // Read and convert EC private key to JWK
     const ecKeyPem = fs.readFileSync(EC_PRIVATE_KEY_PATH, "utf8");
     const ecKey = await keystore.add(ecKeyPem, "pem");
-    const ecJwk = ecKey.toJSON(includePrivate); // Include private key if requested
+    const ecJwk = ecKey.toJSON(includePrivate) as any; // Include private key if requested
 
     // Create ordered JWK with or without private components
-    const orderedEcJwk = includePrivate ? {
+    const orderedEcJwk: EcJwk = includePrivate ? {
       crv: ecJwk.crv,
       d: ecJwk.d,
       kty: ecJwk.kty,
@@ -118,24 +143,29 @@ async function convertKeysToJwk(includePrivate = true) {
 
     return [orderedRsaJwk, orderedEcJwk];
   } catch (err) {
-    console.error("Error converting keys to JWK:", err.message);
+    console.error("Error converting keys to JWK:", (err as Error).message);
     process.exit(1);
   }
 }
 
 // Function to set secure file permissions
-function setSecurePermissions(filePath) {
+function setSecurePermissions(filePath: string): void {
   try {
     // 0600 = read/write for owner only
     fs.chmodSync(filePath, 0o600);
     console.log(`Secure permissions set for ${filePath}`);
   } catch (err) {
-    console.error(`Error setting permissions for ${filePath}:`, err.message);
+    console.error(`Error setting permissions for ${filePath}:`, (err as Error).message);
   }
 }
 
+// Interface for JWKS
+interface Jwks {
+  keys: JwkKey[];
+}
+
 // Main function to execute the script
-async function main() {
+async function main(): Promise<void> {
   const forceOverwrite = process.argv.includes("-f");
   const skipPublic = process.argv.includes("--no-public");
 
@@ -159,7 +189,7 @@ async function main() {
   const privateJwkKeys = await convertKeysToJwk(true);
 
   // Step 3: Construct the final private JWKS object
-  const privateJwks = {
+  const privateJwks: Jwks = {
     keys: privateJwkKeys,
   };
 
@@ -172,7 +202,7 @@ async function main() {
   // Step 5: Generate public JWKS (without private components) for distribution
   if (!skipPublic) {
     const publicJwkKeys = await convertKeysToJwk(false);
-    const publicJwks = {
+    const publicJwks: Jwks = {
       keys: publicJwkKeys,
     };
 

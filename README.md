@@ -60,7 +60,7 @@ The project is configured to enforce the use of pnpm. If you try to use npm, the
 Before running the application, you need to generate the cryptographic keys used for signing tokens:
 
 ```bash
-node generateJwks.js
+pnpm run generate-jwks
 ```
 
 This script will:
@@ -76,7 +76,7 @@ Options:
 
 Example:
 ```bash
-node generateJwks.js -f  # Force overwrite existing keys
+pnpm run generate-jwks -- -f  # Force overwrite existing keys
 ```
 
 **Important**: Keep your private keys secure! Do not share them or include them in your application code.
@@ -157,7 +157,7 @@ PATREON_CLIENT_SECRET=your_patreon_client_secret
 
 Before deploying to production, ensure you have:
 
-1. Generated secure JWKS keys using `node generateJwks.js`
+1. Generated secure JWKS keys using `pnpm run generate-jwks`
 2. Set all required environment variables with secure values
 3. Configured proper database and cache connections
 4. Set up proper SMTP settings for email delivery
@@ -231,4 +231,3 @@ pnpm run wdio
 - **Remember Me**: Option to stay logged in for extended periods (30 days)
 - **Password Reset**: Self-service password recovery flow
 - **Account Confirmation**: Email verification for new accounts
-

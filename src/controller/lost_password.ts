@@ -2,7 +2,7 @@ import { check, validationResult, matchedData } from 'express-validator';
 import { users, confirmation_codes } from '../db/schema.ts';
 import { db } from "../db/index.ts";
 import { eq, and } from "drizzle-orm";
-import { sendPasswordResetEmail } from "../lib/email.ts";
+import { sendPasswordResetEmail } from '../lib/email.ts';
 import { nanoid } from "nanoid";
 import { Request, Response, NextFunction, Application } from 'express';
 

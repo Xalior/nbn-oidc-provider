@@ -58,6 +58,9 @@ export interface Config {
     database_url: string;
     cache_url: string;
     force_https: boolean;
+    features: {
+        registration: boolean;
+    },
     debug: {
         adapter: boolean;
         account: boolean;

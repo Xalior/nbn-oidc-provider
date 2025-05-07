@@ -3,10 +3,13 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
     plugins: [new MiniCssExtractPlugin()],
-    entry: './src/public/main.js',
+    entry: './src/public/main.ts',
     output: {
         filename: 'main.js',
         path: path.resolve(__dirname, 'public')
+    },
+    resolve: {
+        extensions: ['.ts', '.js']
     },
     devServer: {
         static: path.resolve(__dirname, 'public'),
@@ -15,6 +18,11 @@ module.exports = {
     },
     module: {
         rules: [
+            {
+                test: /\.ts$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            },
             {
                 mimetype: 'image/svg+xml',
                 scheme: 'data',

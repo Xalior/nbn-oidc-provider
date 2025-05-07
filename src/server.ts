@@ -1,27 +1,42 @@
-/* eslint-disable no-console */
 import * as path from 'node:path';
 import * as url from 'node:url';
 import cors from 'cors';
-import express from 'express';
+import express, { Request, Response, NextFunction, Application } from 'express';
 import session from 'express-session';
 import flash from 'connect-flash';
 import helmet from 'helmet';
 import { dirname } from 'desm';
 import mustacheExpress from 'mustache-express';
 import Provider from 'oidc-provider';
-import { Account } from './models/account.js';
+import { Account } from './models/account.ts';
 import config from '../data/config.js';
 import * as log from './lib/log.js';
 import provider_routes from './provider/express.js';
-import client_routes from './controller/routes.js';
+import client_routes from './controller/routes.ts';
 import morgan from 'morgan';
 import bodyParser from "body-parser";
 import slugify from "slugify";
 import csrf from "@dr.pogodin/csurf";
 
-import * as openidClient from 'openid-client'
+import * as openidClient from 'openid-client';
 import passport from 'passport';
-import { Strategy } from 'openid-client/passport'
+import { Strategy } from 'openid-client/passport';
+
+// Extend Express Request type to include user and flash
+declare global {
+  namespace Express {
+    interface Request {
+      user?: any;
+      logout: (callback: (err?: Error) => void) => void;
+    }
+    interface Response {
+      locals: {
+        csrfToken?: string;
+        [key: string]: any;
+      };
+    }
+  }
+}
 
 const __dirname = dirname(import.meta.url);
 
@@ -31,10 +46,10 @@ const { PORT = 5000, ISSUER = `https://localhost:${PORT}` } = process.env;
 config.findAccount = Account.findAccount;
 
 // Initialize Express app
-const app = express();
+const app: Application = express();
 
 // setup the logger
-app.use(morgan('combined', { stream: log.logstream }))
+app.use(morgan('combined', { stream: log.logstream }));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -54,7 +69,7 @@ const csrfProtection = csrf({
 });
 
 // Make CSRF token available to all templates
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
     if(req.path.startsWith('/token')
         || req.path.startsWith('/session/end/confirm')
     ) {
@@ -63,8 +78,9 @@ app.use((req, res, next) => {
         csrfProtection(req, res, next);
     }
 });
+
 // Make CSRF token available to all templates
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
     if(!req.path.startsWith('/token')
         && !req.path.startsWith('/session/end/confirm')
     ) {
@@ -91,7 +107,7 @@ app.use(helmet({
     },
 }));
 
-app.use(passport.authenticate('session'))
+app.use(passport.authenticate('session'));
 
 // Register `.mustache` as the template engine
 app.engine('mustache', mustacheExpress());
@@ -100,20 +116,21 @@ app.engine('mustache', mustacheExpress());
 app.set('view engine', 'mustache');
 app.set('views', path.join(__dirname, 'views'));
 
-const hide_headers = ['login', 'mfa', 'register'];
+const hide_headers: string[] = ['login', 'mfa', 'register'];
 
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
     const orig = res.render;
 
     //  Before we dispatch to our renderer, inject our constant requirements
-    res.render = async (view, locals) => {
+    res.render = async (view: string, locals?: Record<string, any>) => {
+        locals = locals || {};
 
         if(req.user) {
             const account = (await Account.findAccount(req, req.user.sub));
             req.user = account.profile['user'];
         }
 
-        locals = {
+        const renderLocals = {
             ...locals,
             errors: req.flash('error'),
             infos: req.flash('info'),
@@ -122,12 +139,13 @@ app.use((req, res, next) => {
             user: req.user,
             csrfToken: res.locals.csrfToken,
             hide_header: hide_headers.includes(view)
-        }
+        };
 
-        app.render(view, locals, (err, html) => {
+        app.render(view, renderLocals, (err: Error | null, html?: string) => {
             if (err) throw err;
+            if (!html) throw new Error('No HTML rendered');
             orig.call(res, '_layout', {
-                ...locals,
+                ...renderLocals,
                 body: html,
             });
         });
@@ -136,10 +154,11 @@ app.use((req, res, next) => {
     next();
 });
 
-const client_id = process.env.CLIENT_ID || "SELF";
-const client_secret = process.env.CLIENT_SECRET || "SELF_SECRET";
+const client_id: string = process.env.CLIENT_ID || "SELF";
+const client_secret: string = process.env.CLIENT_SECRET || "SELF_SECRET";
 
-let server, issuer;
+let server: ReturnType<typeof app.listen>;
+let issuer: openidClient.Issuer<openidClient.Client>;
 
 const provider_url = new URL(config.provider_url);
 
@@ -154,7 +173,7 @@ app.get('/login',
 );
 
 app.get('/docs/:path',
-    function(req, res, next) {
+    function(req: Request, res: Response, next: NextFunction) {
         try{
             const path = slugify(req.params.path);
             return res.render(path);
@@ -172,35 +191,35 @@ app.get('/callback',
     }),
 
     // Executed on successful login
-    function(req, res) {
+    function(req: Request, res: Response) {
         // console.log("Callback URL triggered");
         // console.log(req.user, req.session);
         res.redirect('/');
     }
 );
 
-app.get('/logout', (req, res) => {
+app.get('/logout', (req: Request, res: Response) => {
     req.logout(() => {
         res.redirect(
             openidClient.buildEndSessionUrl(issuer, {
-                post_logout_redirect_uri: `${req.protocol}://${req.host}`,
+                post_logout_redirect_uri: `${req.protocol}://${req.get('host')}`,
             }).href,
-        )
-    })
-})
+        );
+    });
+});
 
-passport.serializeUser((user, cb) => {
-    cb(null, user)
-})
+passport.serializeUser((user: any, cb: (err: any, user: any) => void) => {
+    cb(null, user);
+});
 
-passport.deserializeUser((user, cb) => {
-    return cb(null, user)
-})
+passport.deserializeUser((user: any, cb: (err: any, user: any) => void) => {
+    return cb(null, user);
+});
 
 try {
     // Initialize database adapter if MongoDB URI is provided
-    let adapter;
-    ({ default: adapter } = await import('./database_adapter.js'));
+    let adapter: any;
+    ({ default: adapter } = await import('./database_adapter.ts'));
 
     // Set up the OIDC Provider
     const provider = new Provider(config.provider_url, { adapter, ...config });
@@ -210,12 +229,12 @@ try {
         app.enable('trust proxy');
         provider.proxy = true;
 
-        provider.addListener('server_error', (etx, error) => {
-            console.log(etx, error);
+        provider.addListener('server_error', (ctx: any, error: any) => {
+            console.log(ctx, error);
             console.error(JSON.stringify(error, null, 2));
         });
 
-        app.use((req, res, next) => {
+        app.use((req: Request, res: Response, next: NextFunction) => {
             if (req.secure) {
                 next();
             } else if (['GET', 'HEAD'].includes(req.method)) {
@@ -258,7 +277,7 @@ try {
         'config': issuer,
         'scope': 'openid email',
         'callbackURL': `${provider_url}callback`
-    }, async (tokens, verified) => {
+    }, async (tokens: any, verified: (err: Error | null, user: any) => void) => {
             const this_claim = tokens.claims();
 
             const me = await openidClient.fetchUserInfo(issuer, tokens.access_token, this_claim.sub);
@@ -283,7 +302,7 @@ try {
     ));
 
     // Error handling function(s) must be registered last...
-    app.use((err, req, res, next) => {
+    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         if (err.code === 'EBADCSRFTOKEN') {
             // Handle CSRF token errors
             console.error(`ERROR: CSRF token validation failed - IP:${req.ip} - ${req.method} ${req.originalUrl} - ${req.body ? JSON.stringify(req.body) : ''}`);
@@ -295,7 +314,7 @@ try {
 
         console.error(err);
         res.status(500).render('error', {});
-    })
+    });
 } catch (err) {
     // Gracefully handle errors
     if (server?.listening) server.close();

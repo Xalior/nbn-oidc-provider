@@ -7,23 +7,23 @@ console.log("cache: " + config.cache_url);
 const cache = new Redis(config.cache_url);
 import epochTime from 'oidc-provider/lib/helpers/epoch_time.js';
 
-function grantKeyFor(id) {
+function grantKeyFor(id: string): string {
     return `${config.slug}:grant:${id}`;
 }
 
-function sessionUidKeyFor(id) {
+function sessionUidKeyFor(id: string): string {
     return `${config.slug}:sessionUid:${id}`;
 }
 
-function userCodeKeyFor(userCode) {
+function userCodeKeyFor(userCode: string): string {
     return `${config.slug}:userCode:${userCode}`;
 }
 
-function mfaCodeKeyFor(mfaCode) {
+function mfaCodeKeyFor(mfaCode: string): string {
     return `${config.slug}:mfaCode:${mfaCode}`;
 }
 
-function confCodeKeyFor(confCode) {
+function confCodeKeyFor(confCode: string): string {
     return `${config.slug}:confCode:${confCode}`;
 }
 
@@ -56,9 +56,24 @@ const storable = new Set([
     // oidc-controller
     "MFACode",
     "ConfirmationCode"
-])
+]);
+
+interface PayloadBase {
+    jti?: string;
+    kind?: string;
+    exp?: number;
+    iat?: number;
+    grantId?: string;
+    userCode?: string;
+    uid?: string;
+    consumed?: number;
+    [key: string]: any;
+}
 
 class DatabaseAdapter {
+    model: string;
+    name: string;
+
     /**
      *
      * Creates an instance of DatabaseAdapter for the all database access.
@@ -75,11 +90,12 @@ class DatabaseAdapter {
      * "MFACode", or "ConfirmationCode" -- as part of the NBN oidc-controller
      *
      */
-    constructor(name) {
+    constructor(name: string) {
         if(!storable.has(name)) {
             throw new Error(`Storable name "${name}" not found.`);
         }
         this.model = name;
+        this.name = name;
     }
 
     /**
@@ -94,7 +110,7 @@ class DatabaseAdapter {
      * used for all operations involving storage, retrieval, and deletion.
      *
      */
-    key(id) {
+    key(id: string): string {
         return `${config.slug}:${this.model}:${id}`;
     }
 
@@ -110,7 +126,7 @@ class DatabaseAdapter {
      * @param {number} expiresIn Number of seconds intended for this model to be stored.
      *
      */
-    async upsert(id, payload, expiresIn) {
+    async upsert(id: string, payload: PayloadBase, expiresIn?: number): Promise<void> {
         /**
          *
          * When this is one of AccessToken, AuthorizationCode, RefreshToken, ClientCredentials,
@@ -252,7 +268,7 @@ class DatabaseAdapter {
             // if you're seeing grant key lists growing out of acceptable proportions consider using LTRIM
             // here to trim the list to an appropriate length
             const ttl = await cache.ttl(grantKey);
-            if (expiresIn > ttl) {
+            if (expiresIn && expiresIn > ttl) {
                 multi.expire(grantKey, expiresIn);
             }
         }
@@ -260,13 +276,17 @@ class DatabaseAdapter {
         if (payload.userCode) {
             const userCodeKey = userCodeKeyFor(payload.userCode);
             multi.set(userCodeKey, id);
-            multi.expire(userCodeKey, expiresIn);
+            if (expiresIn) {
+                multi.expire(userCodeKey, expiresIn);
+            }
         }
 
         if (payload.uid) {
             const uidKey = sessionUidKeyFor(payload.uid);
             multi.set(uidKey, id);
-            multi.expire(uidKey, expiresIn);
+            if (expiresIn) {
+                multi.expire(uidKey, expiresIn);
+            }
         }
 
         await multi.exec();
@@ -282,8 +302,8 @@ class DatabaseAdapter {
      * @param {string} id Identifier of oidc-provider model
      *
      */
-    async find(id) {
-        let item = undefined;
+    async find(id: string): Promise<PayloadBase | undefined> {
+        let item: any = undefined;
 
         if(this.model==='Client') {
             item = await Client.findByClientId(id);
@@ -308,10 +328,10 @@ class DatabaseAdapter {
      * @param {string} userCode the user_code value associated with a DeviceCode instance
      *
      */
-    async findByUserCode(userCode) {
+    async findByUserCode(userCode: string): Promise<PayloadBase | undefined> {
         const id = await cache.get(userCodeKeyFor(userCode));
+        if (!id) return undefined;
         return this.find(id);
-
     }
 
     /**
@@ -324,10 +344,10 @@ class DatabaseAdapter {
      * @param {string} uid the uid value associated with a Session instance
      *
      */
-    async findByUid(uid) {
+    async findByUid(uid: string): Promise<PayloadBase | undefined> {
         const id = await cache.get(sessionUidKeyFor(uid));
+        if (!id) return undefined;
         return this.find(id);
-
     }
 
     /**
@@ -341,7 +361,7 @@ class DatabaseAdapter {
      * @param {string} id Identifier of oidc-provider model
      *
      */
-    async consume(id) {
+    async consume(id: string): Promise<void> {
         await cache.call('JSON.SET', this.key(id), 'consumed', Math.floor(Date.now() / 1000));
     }
 
@@ -355,7 +375,7 @@ class DatabaseAdapter {
      * @param {string} id Identifier of oidc-provider model
      *
      */
-    async destroy(id) {
+    async destroy(id: string): Promise<void> {
         const key = this.key(id);
         await cache.del(key);
     }
@@ -370,7 +390,7 @@ class DatabaseAdapter {
      * @param {string} grantId the grantId value associated with a this model's instance
      *
      */
-    async revokeByGrantId(grantId) {
+    async revokeByGrantId(grantId: string): Promise<void> {
         const multi = cache.multi();
         const tokens = await cache.lrange(grantKeyFor(grantId), 0, -1);
         tokens.forEach((token) => multi.del(token));

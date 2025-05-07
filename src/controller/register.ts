@@ -4,10 +4,11 @@ import { db } from "../db/index.js";
 import { eq, sql } from "drizzle-orm";
 import { sendConfirmationEmail} from "../lib/email.js";
 import {nanoid} from "nanoid";
-import {generateAccountId, hashAccountPassword} from "../models/account.js";
+import {generateAccountId, hashAccountPassword} from "../models/account.ts";
+import { Request, Response, NextFunction, Application } from 'express';
 
-export default (app) => {
-    app.get('/register', async (req, res, next) => {
+export default (app: Application): void => {
+    app.get('/register', async (req: Request, res: Response, next: NextFunction) => {
         try {
             return res.render('register');
         } catch (err) {
@@ -22,7 +23,7 @@ export default (app) => {
         }).withMessage("Display name should be between 5 and 64 characters.").escape(),
 
         check('email').trim().notEmpty().isEmail().withMessage('Not a valid e-mail address').custom(
-    async (value,{req, loc, path}) => {
+    async (value: string, {req, loc, path}: {req: Request, loc: string, path: string}) => {
             try {
                 const existing_user = (await db.select()
                     .from(users)
@@ -44,7 +45,7 @@ export default (app) => {
                 }
             } catch (err) {
                 console.log(err);
-                throw new Error(err);
+                throw new Error(err as string);
             }
         }),
 
@@ -56,7 +57,7 @@ export default (app) => {
             minSymbols: 0,
         }).withMessage('Strong password required (Min. length 16 characters long and must containing at-least 2 uppercase, 2 lowercase and 2 numeric characters.'),
 
-        check('password_2').trim().custom((value,{req, loc, path}) => {
+        check('password_2').trim().custom((value: string, {req, loc, path}: {req: Request, loc: string, path: string}) => {
             if (value !== req.body.password_1) {
                 // throw error if passwords do not match
                 throw new Error("Passwords don't match");
@@ -67,7 +68,7 @@ export default (app) => {
         check('agree_tos').notEmpty().withMessage('You must agree to our terms of service to join.'),
 
         // Actual page response
-        async (req, res, next) => {
+        async (req: Request, res: Response, next: NextFunction) => {
             try {
                 if(req.body.confirm_spammer === 'on') {
                     // Redirect to confirmation static page -- the email= slug only logs the email address in the weblog
@@ -79,7 +80,7 @@ export default (app) => {
 
                 const validation_errors = validationResult(req)?.errors;
 
-                if(validation_errors.length) {
+                if(validation_errors && validation_errors.length) {
                     req.body.errors = [];
 
                     validation_errors.forEach((error) => {

@@ -1,12 +1,12 @@
 ## TODO List
 
 ### Recently Implemented Features
+- [x] Port to TypeScript
 - [x] "Remember me" checkbox functionality for login
   - Added name attribute to the existing checkbox in login form
   - Modified session handling to set a 30-day expiration when "remember me" is checked
 
 ### Planned Improvements
-- [ ] Port to TypeScript
 - [ ] Add plugin interface
 - [ ] Support LogoutToken for Server-to-Server logout messages
 - [ ] Tidy up theme management / move error handler code out of config

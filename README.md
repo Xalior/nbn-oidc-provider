@@ -1,5 +1,9 @@
 # NBN OIDC Provider
 
+> **⚠️ Archived — superseded by [byob-oidc](https://github.com/Xalior/byob-oidc)**
+>
+> This repository is no longer maintained. All active development, fixes, and users have moved to [Xalior/byob-oidc](https://github.com/Xalior/byob-oidc). Please use that repository instead.
+
 An OpenID Connect (OIDC) Provider implementation that allows you to authenticate users and issue tokens for authorized applications.
 
 ## Project Overview
